@@ -2,5 +2,5 @@
 
 int main (void)
 {
-	CRayTracer rt = CRayTracer ();
+	CRayTracer rt = CRayTracer ("hw_kernel");
 }

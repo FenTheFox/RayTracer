@@ -10,10 +10,14 @@
 #define RAYTRACER_API __declspec(dllimport)
 #endif
 
+#include <string>
+
 // This class is exported from the RayTracer.dll
 class RAYTRACER_API CRayTracer {
+	std::string kernel_file;
 public:
 	CRayTracer(void);
+	CRayTracer (std::string);
 	// TODO: add your methods here.
 };
 
