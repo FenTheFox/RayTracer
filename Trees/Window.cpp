@@ -9,6 +9,7 @@
 HINSTANCE hInst;								// current instance
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
+GLsizei width, height;
 
 PIXELFORMATDESCRIPTOR pfd = {
 	sizeof (PIXELFORMATDESCRIPTOR),				// Size Of This Pixel Format Descriptor
@@ -38,9 +39,9 @@ LRESULT CALLBACK	WndProc (HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About (HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY _tWinMain (_In_ HINSTANCE hInstance,
-						_In_opt_ HINSTANCE hPrevInstance,
-						_In_ LPTSTR    lpCmdLine,
-						_In_ int       nCmdShow)
+								_In_opt_ HINSTANCE hPrevInstance,
+								_In_ LPTSTR    lpCmdLine,
+								_In_ int       nCmdShow)
 {
 	UNREFERENCED_PARAMETER (hPrevInstance);
 	UNREFERENCED_PARAMETER (lpCmdLine);
@@ -71,8 +72,6 @@ int APIENTRY _tWinMain (_In_ HINSTANCE hInstance,
 
 	return (int)msg.wParam;
 }
-
-
 
 //
 //  FUNCTION: MyRegisterClass()
@@ -119,12 +118,12 @@ BOOL InitInstance (HINSTANCE hInstance, int nCmdShow)
 	hInst = hInstance; // Store instance handle in our global variable
 
 	hWnd = CreateWindow (szWindowClass, szTitle, WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-						 CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
+								CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
 
 	if (!hWnd) return FALSE;
 
 	hdc = GetDC (hWnd);
-	SetPixelFormat (hdc, ChoosePixelFormat(hdc,&pfd), &pfd);
+	SetPixelFormat (hdc, ChoosePixelFormat (hdc, &pfd), &pfd);
 	hglrc = wglCreateContext (hdc);
 	wglMakeCurrent (hdc, hglrc);
 
@@ -134,9 +133,12 @@ BOOL InitInstance (HINSTANCE hInstance, int nCmdShow)
 	return TRUE;
 }
 
-void ResizeGLScene (GLsizei width, GLsizei height)		// Resize/Initialize The GL Window
+void ResizeGLScene (GLsizei w, GLsizei h)		// Resize/Initialize The GL Window
 {
 	if (height == 0) height = 1;
+
+	width = w;
+	height = h;
 
 	glViewport (0, 0, width, height);
 	glMatrixMode (GL_PROJECTION);
@@ -150,7 +152,15 @@ int DrawGLScene ()
 {
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity ();
-	Trees t (1,1,0.01,100);
+	glTranslatef (0.0f, 0.0f, -6.0f);
+	Trees t (5, 5, 0.2, 10);
+	for each (Point2d p in t.points)
+	{
+		glPushMatrix ();
+		glTranslated (p.x-2.5, p.y-2.5, 0);
+		gluSphere (gluNewQuadric (), 0.05, 10, 10);
+		glPopMatrix ();
+	}
 	return TRUE;
 }
 

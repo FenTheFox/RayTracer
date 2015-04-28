@@ -14,9 +14,8 @@ struct Point3d
 
 class Trees
 {
-	double min_dist;
-	std::list<Point2d> points;
 public:
+	std::list<Point2d> points;
 	Trees (int w, int h, double dist, int num);
 	~Trees ();
 };
