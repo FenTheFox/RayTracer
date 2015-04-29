@@ -16,6 +16,6 @@ class Trees
 {
 public:
 	std::list<Point2d> points;
-	Trees (int w, int h, double dist, int num);
+	Trees (double w, double h, double dist, int num);
 	~Trees ();
 };

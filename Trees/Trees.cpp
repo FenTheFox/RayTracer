@@ -23,7 +23,7 @@ bool is_good (vector<vector<Point2d>> grid, Point2d pt, double min_dist, double 
 	return TRUE;
 }
 
-Trees::Trees (int width, int height, double min_dist, int num)
+Trees::Trees (double width, double height, double min_dist, int num)
 {
 	double cell_size = min_dist / sqrt (2), gwidth = width / cell_size, gheight = height / cell_size, r, angle;
 	auto grid = vector<vector<Point2d>> (gwidth, vector<Point2d> (gheight));

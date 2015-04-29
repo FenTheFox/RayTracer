@@ -143,7 +143,7 @@ void ResizeGLScene (GLsizei w, GLsizei h)		// Resize/Initialize The GL Window
 	glViewport (0, 0, width, height);
 	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity ();
-	gluPerspective (45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f); // Calculate The Aspect Ratio Of The Window
+	gluPerspective (45.0f, (GLfloat)width / (GLfloat)height, 0.0001f, 100.0f); // Calculate The Aspect Ratio Of The Window
 	glMatrixMode (GL_MODELVIEW);
 	glLoadIdentity ();
 }
@@ -152,13 +152,14 @@ int DrawGLScene ()
 {
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity ();
-	glTranslatef (0.0f, 0.0f, -6.0f);
-	Trees t (5, 5, 0.2, 10);
+	glTranslatef (0.0f, 0.0f, -1.0f);
+	double h = 1.0, w = (GLfloat)width / (GLfloat)height;
+	Trees t (w, h, 0.05, 10);
 	for each (Point2d p in t.points)
 	{
 		glPushMatrix ();
-		glTranslated (p.x-2.5, p.y-2.5, 0);
-		gluSphere (gluNewQuadric (), 0.05, 10, 10);
+		glTranslated (p.x - w/2, p.y - h/2, 0);
+		gluSphere (gluNewQuadric (), 0.01, 10, 10);
 		glPopMatrix ();
 	}
 	return TRUE;
