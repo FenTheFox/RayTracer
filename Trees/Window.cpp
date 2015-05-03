@@ -208,7 +208,7 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_SIZE:
 		ResizeGLScene (LOWORD (lParam), HIWORD (lParam));
 		break;
-	case WM_TIMER:
+	//case WM_TIMER:
 	case WM_PAINT:
 		hdc = BeginPaint (hWnd, &ps);
 		DrawGLScene ();

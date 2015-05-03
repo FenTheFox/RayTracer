@@ -61,4 +61,7 @@
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
+  <ItemGroup>
+    <Object Include="..\trees.obj" />
+  </ItemGroup>
 </Project>

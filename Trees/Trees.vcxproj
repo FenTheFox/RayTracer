@@ -164,6 +164,9 @@
     <Image Include="small.ico" />
     <Image Include="Trees.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Object Include="..\trees.obj" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
