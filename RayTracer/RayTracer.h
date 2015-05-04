@@ -14,11 +14,11 @@
 
 // This class is exported from the RayTracer.dll
 class RAYTRACER_API CRayTracer {
-	std::string kernel_file;
 public:
 	CRayTracer(void);
 	CRayTracer (std::string);
 	// TODO: add your methods here.
+	std::string kernel_file;
 };
 
 extern RAYTRACER_API int nRayTracer;

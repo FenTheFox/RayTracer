@@ -20,6 +20,7 @@
 #include <math.h>
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <list>
@@ -30,3 +31,5 @@
 
 #include <gl\GL.h>
 #include <gl\GLU.h>
+
+#include "stringops.h"

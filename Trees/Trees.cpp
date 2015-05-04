@@ -1,7 +1,8 @@
 #include "stdafx.h"
 
+#include "Material.h"
 #include "Trees.h"
-#include "RandomQueue.h"
+#include "stringops.h"
 
 //Read about Poisson disk sampling and dart throwing -- simple idea to generate visually pleasing distribution patterns. Also think about using Autodesk 123D to capture real tree mdels
 using namespace std;
@@ -23,7 +24,7 @@ bool is_good (vector<vector<Point2d>> grid, Point2d pt, double min_dist, double 
 	return TRUE;
 }
 
-Trees::Trees (double width, double height, double min_dist, int num)
+void Trees::generateTrees (double width, double height, double min_dist, int num, int age)
 {
 	double cell_size = min_dist / sqrt (2), gwidth = width / cell_size, gheight = height / cell_size, r, angle;
 	auto grid = vector<vector<Point2d>> (gwidth, vector<Point2d> (gheight));
@@ -33,7 +34,7 @@ Trees::Trees (double width, double height, double min_dist, int num)
 	Point2d pt = Point2d { dist (gen)*width, dist (gen)*height }, new_pt;
 
 	worklist.push_back (pt);
-	points.push_back (pt);
+	trees.push_back (make_pair (pt, tree_objs[dist (gen)*tree_objs.size ()]));
 	grid[pt.x / cell_size][pt.y / cell_size] = pt;
 
 	while (!worklist.empty ()) {
@@ -48,11 +49,55 @@ Trees::Trees (double width, double height, double min_dist, int num)
 				 new_pt.y > 0 && new_pt.y < height &&
 				 is_good (grid, new_pt, min_dist, cell_size)) {
 				worklist.push_back (new_pt);
-				points.push_back (new_pt);
+				trees.push_back (make_pair (new_pt, tree_objs[dist (gen)*tree_objs.size ()]));
 				grid[min (new_pt.x / cell_size, gwidth - 1)][min (new_pt.y / cell_size, gheight - 1)] = new_pt;
 			}
 		}
 	}
+
+}
+
+void Trees::parseTreeFile (string file)
+{
+	ifstream ifs (file);
+	string line;
+
+	vector<Material> mats;
+	vector<Mesh> meshes;
+
+	while (getline(ifs,line)) {
+		if (line.find ("mtllib") != string::npos) {
+			mats = Material::parseMaterials (substring (line, line.find_first_of (' ') + 1));
+			break;
+		}
+	}
+
+	while (getline (ifs, line, 'v')) {
+		if (ifs.good ()) {
+			ifs.putback ('v');
+			meshes.emplace_back (ifs, mats);
+		}
+	}
+
+	for (size_t i = 0; i < meshes.size(); i++)
+		for (size_t j = i + 1; j < meshes.size(); j++)
+			if (meshes[i].Merge (meshes[j]))
+				meshes.erase (meshes.begin () + j);
+
+	Tree t;
+	for each (Mesh m in meshes)
+	{
+		if (t.name != m.name) {
+			tree_objs.push_back (t);
+			t = Tree ();
+			t.name = m.name;
+		}
+		t.meshes.push_back (m);
+	}
+}
+
+Trees::Trees ()
+{
 }
 
 Trees::~Trees ()

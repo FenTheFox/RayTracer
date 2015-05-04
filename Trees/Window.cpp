@@ -2,6 +2,7 @@
 //
 #include "stdafx.h"
 #include "Trees.h"
+#include "Structs.h"
 
 #define MAX_LOADSTRING 100
 
@@ -10,6 +11,7 @@ HINSTANCE hInst;								// current instance
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
 GLsizei width, height;
+Trees t;
 
 PIXELFORMATDESCRIPTOR pfd = {
 	sizeof (PIXELFORMATDESCRIPTOR),				// Size Of This Pixel Format Descriptor
@@ -127,6 +129,8 @@ BOOL InitInstance (HINSTANCE hInstance, int nCmdShow)
 	hglrc = wglCreateContext (hdc);
 	wglMakeCurrent (hdc, hglrc);
 
+	t.parseTreeFile ("C:\\Users\\Timm\\OneDrive\\Documents\\Visual Studio 2013\\Projects\\RayTracer\\trees.obj");
+
 	ShowWindow (hWnd, nCmdShow);
 	UpdateWindow (hWnd);
 
@@ -148,20 +152,20 @@ void ResizeGLScene (GLsizei w, GLsizei h)		// Resize/Initialize The GL Window
 	glLoadIdentity ();
 }
 
-int DrawGLScene ()
+int DrawGLScene (HDC hdc)
 {
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity ();
-	glTranslatef (0.0f, 0.0f, -1.0f);
-	double h = 1.0, w = (GLfloat)width / (GLfloat)height;
-	Trees t (w, h, 0.05, 10);
-	for each (Point2d p in t.points)
+	glTranslatef (0.0f, 0.0f, -10.0f);
+	double h = 10.0, w = h * ((GLfloat)width / (GLfloat)height);
+	t.generateTrees (w, h, 1, 10, 0);
+	/*for each (auto p in t.trees)
 	{
 		glPushMatrix ();
-		glTranslated (p.x - w/2, p.y - h/2, 0);
+		glTranslated (p.first.x - w / 2, p.first.y - h / 2, 0);
 		gluSphere (gluNewQuadric (), 0.01, 10, 10);
 		glPopMatrix ();
-	}
+	}*/
 	return TRUE;
 }
 
@@ -208,10 +212,10 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_SIZE:
 		ResizeGLScene (LOWORD (lParam), HIWORD (lParam));
 		break;
-	//case WM_TIMER:
+		//case WM_TIMER:
 	case WM_PAINT:
 		hdc = BeginPaint (hWnd, &ps);
-		DrawGLScene ();
+		DrawGLScene (hdc);
 		SwapBuffers (hdc);
 		EndPaint (hWnd, &ps);
 		break;

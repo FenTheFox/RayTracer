@@ -1,21 +1,22 @@
 #pragma once
 
 #include "resource.h"
+#include "Mesh.h"
 
-struct Point2d
+struct Tree
 {
-	double x, y;
-};
-
-struct Point3d
-{
-	double x, y, z;
+	std::string name;
+	std::vector<Mesh> meshes;
 };
 
 class Trees
 {
+	std::vector<Tree> tree_objs;
 public:
-	std::list<Point2d> points;
-	Trees (double w, double h, double dist, int num);
+	Trees ();
 	~Trees ();
+
+	void parseTreeFile (std::string);
+	void generateTrees (double w, double h, double dist, int num, int age);
+	std::vector<std::pair<Point2d, Tree>> trees;
 };
