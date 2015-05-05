@@ -52,5 +52,7 @@ Mesh::Mesh (ifstream& ifs, const vector<Material>& mats)
 	}
 }
 
+Mesh::Mesh ()
+{}
 Mesh::~Mesh ()
 {}

@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "Trees.h"
 #include "Structs.h"
+#include "RayTracer.h"
 
 #define MAX_LOADSTRING 100
 
@@ -11,6 +12,8 @@ HINSTANCE hInst;								// current instance
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
 GLsizei width, height;
+
+CRayTracer rt;
 Trees t;
 
 PIXELFORMATDESCRIPTOR pfd = {
@@ -128,9 +131,6 @@ BOOL InitInstance (HINSTANCE hInstance, int nCmdShow)
 	SetPixelFormat (hdc, ChoosePixelFormat (hdc, &pfd), &pfd);
 	hglrc = wglCreateContext (hdc);
 	wglMakeCurrent (hdc, hglrc);
-
-	t.parseTreeFile ("C:\\Users\\Timm\\OneDrive\\Documents\\Visual Studio 2013\\Projects\\RayTracer\\trees.obj");
-
 	ShowWindow (hWnd, nCmdShow);
 	UpdateWindow (hWnd);
 
@@ -147,25 +147,35 @@ void ResizeGLScene (GLsizei w, GLsizei h)		// Resize/Initialize The GL Window
 	glViewport (0, 0, width, height);
 	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity ();
-	gluPerspective (45.0f, (GLfloat)width / (GLfloat)height, 0.0001f, 100.0f); // Calculate The Aspect Ratio Of The Window
+	gluPerspective (45.0f, (GLfloat)width / (GLfloat)height, 0.0001f, 10000.0f); // Calculate The Aspect Ratio Of The Window
 	glMatrixMode (GL_MODELVIEW);
 	glLoadIdentity ();
 }
 
-int DrawGLScene (HDC hdc)
+int DrawGLScene ()
 {
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity ();
-	glTranslatef (0.0f, 0.0f, -10.0f);
+	glTranslatef (0.0f, 0.0f, -200.0f);
 	double h = 10.0, w = h * ((GLfloat)width / (GLfloat)height);
-	t.generateTrees (w, h, 1, 10, 0);
-	/*for each (auto p in t.trees)
+	rt = CRayTracer (width, height);
+	t.parseTreeFile ("C:\\Users\\Timm\\OneDrive\\Documents\\Visual Studio 2013\\Projects\\RayTracer\\trees.obj", &rt);
+	t.generateTrees (width, height, 1, 10, 0);
+	int objs = 0;
+
+	for each (auto t in t.trees)
 	{
-		glPushMatrix ();
-		glTranslated (p.first.x - w / 2, p.first.y - h / 2, 0);
-		gluSphere (gluNewQuadric (), 0.01, 10, 10);
-		glPopMatrix ();
-	}*/
+		objs += t.second.meshes.size ();
+		for each (auto m in t.second.meshes)
+			for (size_t i = 0; i < m._verts.size (); i++)
+				m._verts[i] = Point3d (m._verts[i].x + t.first.x, m._verts[i].y + t.first.y, m._verts[i].z);
+	}
+	cl_float4 *ptr = new cl_float4[height*width];
+	rt.initBuffs (objs);
+	for each (auto t in t.trees)
+		for each (auto m in t.second.meshes)
+			rt.setObjBuffer (CRayTracer::OBJECT_BUFF, m);
+	rt.raytrace (ptr);
 	return TRUE;
 }
 
@@ -203,10 +213,11 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_CREATE:
 		glShadeModel (GL_SMOOTH);
-		glClearColor (0.0f, 0.0f, 0.0f, 0.5f);
+		glClearColor (0.5f, 0.5f, 1.0f, 1.0f);
 		glClearDepth (1.0f);
 		glEnable (GL_DEPTH_TEST);
 		glDepthFunc (GL_LEQUAL);
+		glEnable (GL_TEXTURE_2D);
 		glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 		break;
 	case WM_SIZE:
@@ -215,7 +226,7 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		//case WM_TIMER:
 	case WM_PAINT:
 		hdc = BeginPaint (hWnd, &ps);
-		DrawGLScene (hdc);
+		DrawGLScene ();
 		SwapBuffers (hdc);
 		EndPaint (hWnd, &ps);
 		break;

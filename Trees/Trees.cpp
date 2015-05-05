@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include "RayTracer.h"
 #include "Material.h"
 #include "Trees.h"
 #include "stringops.h"
@@ -26,6 +27,9 @@ bool is_good (vector<vector<Point2d>> grid, Point2d pt, double min_dist, double 
 
 void Trees::generateTrees (double width, double height, double min_dist, int num, int age)
 {
+	trees.push_back (pair<Point2d, Tree> (Point2d (), tree_objs[0]));
+	return;
+
 	double cell_size = min_dist / sqrt (2), gwidth = width / cell_size, gheight = height / cell_size, r, angle;
 	auto grid = vector<vector<Point2d>> (gwidth, vector<Point2d> (gheight));
 	auto worklist = deque<Point2d> ();
@@ -54,10 +58,9 @@ void Trees::generateTrees (double width, double height, double min_dist, int num
 			}
 		}
 	}
-
 }
 
-void Trees::parseTreeFile (string file)
+void Trees::parseTreeFile (string file, CRayTracer *rt)
 {
 	ifstream ifs (file);
 	string line;
@@ -75,7 +78,8 @@ void Trees::parseTreeFile (string file)
 	while (getline (ifs, line, 'v')) {
 		if (ifs.good ()) {
 			ifs.putback ('v');
-			meshes.emplace_back (ifs, mats);
+			Mesh m (ifs, mats);
+			meshes.push_back (m);
 		}
 	}
 
@@ -84,6 +88,19 @@ void Trees::parseTreeFile (string file)
 			if (meshes[i].Merge (meshes[j]))
 				meshes.erase (meshes.begin () + j);
 
+	for (size_t i = 0; i < meshes.size (); i++) {
+		for (size_t j = 0; j < meshes[i].faces.size (); j++) {
+			pair<int, int> p1, p2, p3;
+			std::tie (p1, p2, p3) = meshes[i].faces[j];
+			meshes[i]._verts.push_back (Mesh::verts[p1.first - 1]);
+			meshes[i]._verts.push_back (Mesh::verts[p2.first - 1]);
+			meshes[i]._verts.push_back (Mesh::verts[p3.first - 1]);
+			meshes[i]._normals.push_back (Mesh::normals[p1.second - 1]);
+			meshes[i]._normals.push_back (Mesh::normals[p2.second - 1]);
+			meshes[i]._normals.push_back (Mesh::normals[p3.second - 1]);
+		}
+	}
+		
 	Tree t;
 	for each (Mesh m in meshes)
 	{
@@ -94,6 +111,9 @@ void Trees::parseTreeFile (string file)
 		}
 		t.meshes.push_back (m);
 	}
+	tree_objs[0] = t;
+
+	rt->setMatBuffer (CRayTracer::MATERIAL_BUFF, mats);
 }
 
 Trees::Trees ()

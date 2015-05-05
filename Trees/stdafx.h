@@ -26,8 +26,13 @@
 #include <list>
 #include <array>
 #include <deque>
+#include <chrono>
 
 #include <random>
+
+#define CL_USE_DEPRECATED_OPENCL_2_0_APIS
+#include <CL\cl.hpp>
+#include <direct.h>
 
 #include <gl\GL.h>
 #include <gl\GLU.h>

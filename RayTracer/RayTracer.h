@@ -16,9 +16,11 @@
 class RAYTRACER_API CRayTracer {
 public:
 	CRayTracer(void);
-	CRayTracer (std::string);
+	CRayTracer (std::string, int width, int height);
 	// TODO: add your methods here.
+	int width, height;
 	std::string kernel_file;
+	void raytrace (float *verts, int verts_len, float *norms, int norms_len, int *faces, int faces_len, float *mats, int mats_len);
 };
 
 extern RAYTRACER_API int nRayTracer;

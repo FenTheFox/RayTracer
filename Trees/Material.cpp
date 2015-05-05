@@ -11,6 +11,10 @@ vector<Material> Material::parseMaterials (const string& f)
 	string line;
 	while (getline (ifs, line, 'n'))
 		mats.emplace_back (ifs);
+
+	for (size_t i = 0; i < mats.size(); i++)
+		mats[i].id = i;
+
 	return mats;
 }
 
