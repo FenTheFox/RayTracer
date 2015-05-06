@@ -14,6 +14,6 @@ public:
 	std::string name;
 	Material mat;
 	std::vector<std::tuple<std::pair<int, int>, std::pair<int, int>, std::pair<int, int>>> faces;
-	std::vector<Point3d> _verts, _normals;
-	static std::vector<Point3d> verts, normals;
+	std::vector<Point3f> _verts, _normals;
+	static std::vector<Point3f> verts, normals;
 };

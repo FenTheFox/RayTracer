@@ -18,7 +18,7 @@ public:
 	CRayTracer (int width, int height);
 
 	static enum BUFF { VERTEX_BUFF, NORMAL_BUFF, MATERIAL_BUFF, OBJECT_BUFF };
-	static void createPointBuffer (BUFF b, std::vector<Point3d> pts, int *len, cl_float3 **buff);
+	static void createPointBuffer (BUFF b, std::vector<Point3f> pts, int *len, cl_float3 **buff);
 	static void createMatBuffer (BUFF b, std::vector<Material> mats, int *len, cl_float16 **buff);
 
 	void initBuffs (int num_objs)
@@ -27,7 +27,7 @@ public:
 		vert_buf = new cl_float3[num_objs];
 		norm_buf = new cl_float3[num_objs];
 	}
-	void setPointBuffer (BUFF b, std::vector<Point3d> in);
+	void setPointBuffer (BUFF b, std::vector<Point3f> in);
 	void setMatBuffer (BUFF b, std::vector<Material> in);
 	void setObjBuffer (BUFF b, Mesh m);
 	void raytrace (cl_float4 *out_buff);

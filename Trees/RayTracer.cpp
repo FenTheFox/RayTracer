@@ -22,7 +22,7 @@ inline void checkErr (cl_int err, const char* name)
 	}
 }
 
-void CRayTracer::createPointBuffer (BUFF b, std::vector<Point3d> pts, int *len, cl_float3 **buff)
+void CRayTracer::createPointBuffer (BUFF b, std::vector<Point3f> pts, int *len, cl_float3 **buff)
 {
 	cl_float3 fl;
 	cl_float3 *tmp = new cl_float3 [pts.size () + *len];
@@ -70,7 +70,7 @@ void CRayTracer::createMatBuffer (BUFF b, std::vector<Material> mats, int *len, 
 	}
 }
 
-void CRayTracer::setPointBuffer (BUFF b, std::vector<Point3d> pts)
+void CRayTracer::setPointBuffer (BUFF b, std::vector<Point3f> pts)
 {
 	switch (b) {
 	case CRayTracer::VERTEX_BUFF:
@@ -151,6 +151,7 @@ void CRayTracer::raytrace (cl_float4 *out_buff)
 	checkErr (err, "Buffer::Buffer()");
 	cl::Buffer outCl (context, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, width * height * sizeof (cl_float4), out_buff, &err);
 	checkErr (err, "Buffer::Buffer()");
+	//cl::BufferRenderGL outGl (context, CL_MEM_WRITE_ONLY, , &err);
 
 	cl::Kernel kernel (program, "main", &err);
 	checkErr (err, "Kernel::Kernel()");

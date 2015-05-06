@@ -21,5 +21,5 @@ public:
 	void parseTreeFile (std::string, CRayTracer *);
 	void generateTrees (double w, double h, double dist, int num, int age);
 
-	std::vector<std::pair<Point2d, Tree>> trees;
+	std::vector<std::pair<Point2f, Tree>> trees;
 };

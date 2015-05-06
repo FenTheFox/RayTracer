@@ -147,20 +147,23 @@ void ResizeGLScene (GLsizei w, GLsizei h)		// Resize/Initialize The GL Window
 	glViewport (0, 0, width, height);
 	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity ();
-	gluPerspective (45.0f, (GLfloat)width / (GLfloat)height, 0.0001f, 10000.0f); // Calculate The Aspect Ratio Of The Window
+	glOrtho (-1, 1, 1, -1, 1, 100);
+	//gluPerspective (45.0f, (GLfloat)width / (GLfloat)height, 0.0001f, 10000.0f); // Calculate The Aspect Ratio Of The Window
 	glMatrixMode (GL_MODELVIEW);
 	glLoadIdentity ();
 }
 
-int DrawGLScene ()
+bool DrawGLScene ()
 {
+	cl_float4 *ptr = new cl_float4[height*width];
+
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity ();
-	glTranslatef (0.0f, 0.0f, -200.0f);
+	//glTranslatef (0.0f, 0.0f, -200.0f);
 	double h = 10.0, w = h * ((GLfloat)width / (GLfloat)height);
 	rt = CRayTracer (width, height);
 	t.parseTreeFile ("C:\\Users\\Timm\\OneDrive\\Documents\\Visual Studio 2013\\Projects\\RayTracer\\trees.obj", &rt);
-	t.generateTrees (width, height, 1, 10, 0);
+	t.generateTrees (width, height, 1080, 10, 0);
 	int objs = 0;
 
 	for each (auto t in t.trees)
@@ -168,14 +171,34 @@ int DrawGLScene ()
 		objs += t.second.meshes.size ();
 		for each (auto m in t.second.meshes)
 			for (size_t i = 0; i < m._verts.size (); i++)
-				m._verts[i] = Point3d (m._verts[i].x + t.first.x, m._verts[i].y + t.first.y, m._verts[i].z);
+				m._verts[i] = Point3f (m._verts[i].x + t.first.x, m._verts[i].y + t.first.y, m._verts[i].z);
 	}
-	cl_float4 *ptr = new cl_float4[height*width];
 	rt.initBuffs (objs);
 	for each (auto t in t.trees)
 		for each (auto m in t.second.meshes)
 			rt.setObjBuffer (CRayTracer::OBJECT_BUFF, m);
 	rt.raytrace (ptr);
+	glBindTexture (GL_TEXTURE_2D, 1);
+	glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D (GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_FLOAT, ptr);
+	//delete[] pixels;
+
+	glClearColor (0, 0, 1, 1);
+	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glMatrixMode (GL_PROJECTION);
+	glLoadIdentity ();
+	glOrtho (-1, 1, 1, -1, 1, 100);
+	glMatrixMode (GL_MODELVIEW);
+	glEnable (GL_TEXTURE_2D);
+	glLoadIdentity ();
+	glBegin (GL_QUADS);
+	glTexCoord2f (0, 1); glVertex3f (-1, -1, -1);
+	glTexCoord2f (0, 0); glVertex3f (-1, 1, -1);
+	glTexCoord2f (1, 0); glVertex3f (1, 1, -1);
+	glTexCoord2f (1, 1); glVertex3f (1, -1, -1);
+	glEnd ();
 	return TRUE;
 }
 

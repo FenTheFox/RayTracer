@@ -5,8 +5,8 @@
 
 using namespace std;
 
-std::vector<Point3d> Mesh::verts = std::vector<Point3d> ();
-std::vector<Point3d> Mesh::normals = std::vector<Point3d> ();
+std::vector<Point3f> Mesh::verts = std::vector<Point3f> ();
+std::vector<Point3f> Mesh::normals = std::vector<Point3f> ();
 
 bool Mesh::Merge (Mesh& other)
 {

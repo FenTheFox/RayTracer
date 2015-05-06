@@ -17,7 +17,7 @@ public:
 	};
 	int id;
 	std::string name;
-	Point3d Ka, Kd, Ks, Ke, Tf;
+	Point3f Ka, Kd, Ks, Ke, Tf;
 	double Ns, Ni, d, Tr;
 	illum_model illum;
 };

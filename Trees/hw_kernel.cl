@@ -66,10 +66,13 @@ __kernel void main(__global float3 *rays, __global float3 *verts, __global float
 	Hit h, shape_hit;
 	float tmax = 10000;
 	int voff = 0, noff = 0;
-	for(int i = 0; i < num_objs; i++) {
+/*	for(int i = 0; i < num_objs; i++) {
 		face f = {verts[(voff++) + i], verts[(voff++) + i], verts[(voff++) + i], norms[(noff++) + i], norms[(noff++) + i], norms[(noff++) + i]};
 		if((shape_hit = hit_shape(f, r, tmax)).t != 0)
 			h = shape_hit;
-	}
-
+	} */
+	if((idx%1920) < 960)
+	out[idx] = (float4)(1.0,0.0,0.0,1.0);
+	else
+	out[idx] = (float4)(0.0,0.0,1.0,1.0);
 }

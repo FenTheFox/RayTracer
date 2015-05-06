@@ -34,15 +34,15 @@ Material::Material (ifstream &f)
 		if (fieldName == "ewmtl")
 			name = field;
 		else if (fieldName == "Ka")
-			Ka = Point3d (field);
+			Ka = Point3f (field);
 		else if (fieldName == "Kd")
-			Kd = Point3d (field);
+			Kd = Point3f (field);
 		else if (fieldName == "Ks")
-			Ks = Point3d (field);
+			Ks = Point3f (field);
 		else if (fieldName == "Ke")
-			Ke = Point3d (field);
+			Ke = Point3f (field);
 		else if (fieldName == "Tf")
-			Tf = Point3d (field);
+			Tf = Point3f (field);
 		else if (fieldName == "illum")
 			illum = (illum_model)atoi (field.c_str());
 		else if (fieldName == "Ns")
