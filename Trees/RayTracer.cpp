@@ -38,12 +38,12 @@ void CRayTracer::setFaceBuffer (std::vector<Face> faces)
 
 void CRayTracer::makeRays (Ray * buff)
 {
-	Point3f cpos (0.0, 0.0, 1.0), cdir (0.0, 0.0, -1.0), cup (0.0, 1.0, 0.0), cright (1.0, 0.0, 0.0);
+	Point3f cpos (0.0, 0.0, 500.0), cdir (0.0, 0.0, -1.0), cup (0.0, 1.0, 0.0), cright (1.0, 0.0, 0.0);
 	double norm_i, norm_j;
 	for (size_t i = 0; i < width; i++) {
 		norm_i = ((float)i / (float)width) - 0.5;
 		for (size_t j = 0; j < height; j++) {
-			norm_j = ((float)j / (float)width) - 0.25;
+			norm_j = ((float)j / (float)height) - 0.5;
 			buff[j*width + i].pos = cpos;
 			buff[j*width + i].dir.x = norm_i;
 			buff[j*width + i].dir.y = norm_j;

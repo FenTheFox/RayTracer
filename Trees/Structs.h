@@ -61,6 +61,7 @@ struct Light
 	cl_float4 dir;
 	cl_float4 intensity;
 	cl_int type;
+	cl_int pad[3];
 };
 
 struct Face
@@ -72,6 +73,7 @@ struct Face
 	cl_float4 n1;
 	cl_float4 n2;
 	cl_int mat;
+	cl_int pad[7];
 };
 
 struct Mat_Struct
@@ -80,5 +82,6 @@ struct Mat_Struct
 	cl_float4 Kd;
 	cl_float4 Ks;
 	cl_float phong;
+	cl_float pad[3];
 };
 #pragma pack()

@@ -6,6 +6,9 @@
 #include "RayTracer.h"
 
 #define MAX_LOADSTRING 100
+#define START_W 400
+#define START_H 400
+
 
 // Global Variables:
 HINSTANCE hInst;								// current instance
@@ -123,7 +126,7 @@ BOOL InitInstance (HINSTANCE hInstance, int nCmdShow)
 	hInst = hInstance; // Store instance handle in our global variable
 
 	hWnd = CreateWindow (szWindowClass, szTitle, WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-								CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
+								CW_USEDEFAULT, 0, START_W, START_H, NULL, NULL, hInstance, NULL);
 
 	if (!hWnd) return FALSE;
 
@@ -162,7 +165,7 @@ bool DrawGLScene ()
 	glLoadIdentity ();
 	double h = 10.0, w = h * ((GLfloat)width / (GLfloat)height);
 	rt = CRayTracer (width, height);
-	t.parseTreeFile ("trees.obj", rt);
+	t.parseTreeFile ("test.obj", rt);
 	t.generateTrees (width, height, 1080, 10, 0);
 	rt.setFaceBuffer (t.faces);
 	rt.raytrace (ptr);

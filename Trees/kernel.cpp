@@ -50,9 +50,9 @@ void main (Ray *rays, Mat_Struct *mats, Face *faces, int num_faces, float4 *out,
 			h = shape_hit;
 	}
 	if (h.t < 1000) {
-		out[idx].s0 = 1;
-		out[idx].s1 = 0;
-		out[idx].s2 = 0;
-		out[idx].s3 = 0;
+		out[idx].s0 = max (h.norm.x, -1 * h.norm.x);
+		out[idx].s1 = max (h.norm.y, -1 * h.norm.y);
+		out[idx].s2 = max (h.norm.z, -1 * h.norm.z);
+		out[idx].s3 = 1;
 	}
 }

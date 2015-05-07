@@ -86,12 +86,14 @@ void Trees::generateTrees (double width, double height, double min_dist, int num
 		if (max (f.v0.z, max (f.v1.z, f.v2.z)) > max.z) max.z = max (f.v0.z, max (f.v1.z, f.v2.z));
 	}
 
-	Point3f scale (max (-1 * min.x / width, max.x / width), max (-1 * min.y / width, max.y / width), 1);
-	for each (auto f in faces)
-	{
-		f.v0 = f.v0 / scale;
-		f.v1 = f.v1 / scale;
-		f.v2 = f.v2 / scale;
+	Point3f scale (max (-1 * min.x / width, max.x / width), max (-1 * min.y / height, max.y / height), 1);
+	if (!(scale.x <= 1 && scale.y <= 1 && scale.z <= 1)) {
+		for each (auto f in faces)
+		{
+			f.v0 = f.v0 / scale;
+			f.v1 = f.v1 / scale;
+			f.v2 = f.v2 / scale;
+		}
 	}
 }
 
