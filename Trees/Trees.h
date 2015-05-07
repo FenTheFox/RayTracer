@@ -14,12 +14,14 @@ struct Tree
 class Trees
 {
 	std::vector<Tree> tree_objs;
+	Point3f min, max;
 public:
 	Trees ();
 	~Trees ();
 
-	void parseTreeFile (std::string, CRayTracer *);
+	void parseTreeFile (std::string, CRayTracer&);
 	void generateTrees (double w, double h, double dist, int num, int age);
 
-	std::vector<std::pair<Point2f, Tree>> trees;
+	std::vector<Tree> trees;
+	std::vector<Face> faces;
 };

@@ -4,9 +4,7 @@
 #include "stdafx.h"
 #include "Mesh.h"
 #include "RayTracer.h"
-
-const std::string hw ("Hello World\n");
-
+void main (Ray *rays, Mat_Struct *mats, Face *faces, int num_faces, cl_float4 *out, int idx);
 void printCwd ()
 {
 	char cwd[FILENAME_MAX];
@@ -22,95 +20,44 @@ inline void checkErr (cl_int err, const char* name)
 	}
 }
 
-void CRayTracer::createPointBuffer (BUFF b, std::vector<Point3f> pts, int *len, cl_float3 **buff)
+void CRayTracer::setMatBuffer (std::vector<Material> mats)
 {
-	cl_float3 fl;
-	cl_float3 *tmp = new cl_float3 [pts.size () + *len];
-	memcpy (tmp, *buff, *len);
-	*buff = tmp;
-	switch (b) {
-	case CRayTracer::VERTEX_BUFF:
-	case CRayTracer::NORMAL_BUFF:
-		for (size_t i = 0; i < pts.size (); i++) {
-			fl.x = pts[i].x;
-			fl.y = pts[i].y;
-			fl.z = pts[i].z;
-			(*buff)[i] = fl;
+	numMaterial = mats.size ();
+	materialBuff = new Mat_Struct[numMaterial];
+	for (size_t i = 0; i < mats.size (); i++)
+		materialBuff[i] = mats[i];
+}
+
+void CRayTracer::setFaceBuffer (std::vector<Face> faces)
+{
+	numFace = faces.size ();
+	faceBuff = new Face[numFace];
+	for (size_t i = 0; i < faces.size (); i++)
+		faceBuff[i] = faces[i];
+}
+
+void CRayTracer::makeRays (Ray * buff)
+{
+	Point3f cpos (0.0, 0.0, 1.0), cdir (0.0, 0.0, -1.0), cup (0.0, 1.0, 0.0), cright (1.0, 0.0, 0.0);
+	double norm_i, norm_j;
+	for (size_t i = 0; i < width; i++) {
+		norm_i = ((float)i / (float)width) - 0.5;
+		for (size_t j = 0; j < height; j++) {
+			norm_j = ((float)j / (float)width) - 0.25;
+			buff[j*width + i].pos = cpos;
+			buff[j*width + i].dir.x = norm_i;
+			buff[j*width + i].dir.y = norm_j;
+			buff[j*width + i].dir.z = -1;
 		}
-		*len += pts.size ();
-		break;
-	default:
-		break;
 	}
 }
 
-void CRayTracer::createMatBuffer (BUFF b, std::vector<Material> mats, int *len, cl_float16 **buff)
-{
-	cl_float16 fl;
-	*buff = new cl_float16[mats.size ()];
-	switch (b) {
-	case CRayTracer::MATERIAL_BUFF:
-		for (size_t i = 0; i < mats.size (); i++) {
-			fl.s0 = mats[i].id;
-			fl.s1 = mats[i].Ka.x;
-			fl.s2 = mats[i].Ka.y;
-			fl.s3 = mats[i].Ka.z;
-			fl.s4 = mats[i].Kd.x;
-			fl.s5 = mats[i].Kd.y;
-			fl.s6 = mats[i].Kd.z;
-			fl.s7 = mats[i].Ks.x;
-			fl.s8 = mats[i].Ks.y;
-			fl.s9 = mats[i].Ks.z;
-			(*buff)[i] = fl;
-		}
-		*len += mats.size ();
-		break;
-	default:
-		break;
-	}
-}
-
-void CRayTracer::setPointBuffer (BUFF b, std::vector<Point3f> pts)
-{
-	switch (b) {
-	case CRayTracer::VERTEX_BUFF:
-		createPointBuffer (b, pts, &vert_len, &vert_buf);
-		break;
-	case CRayTracer::NORMAL_BUFF:
-		createPointBuffer (b, pts, &norm_len, &norm_buf);
-		break;
-	default:
-		break;
-	}
-}
-
-void CRayTracer::setMatBuffer (BUFF b, std::vector<Material> mats)
-{
-	createMatBuffer (b, mats, &mat_len, &mat_buf);
-}
-
-void CRayTracer::setObjBuffer (BUFF b, Mesh m)
-{
-	int id = obj_len++;
-	createPointBuffer (VERTEX_BUFF, m._verts, &vert_len, &vert_buf);
-	createPointBuffer (VERTEX_BUFF, m._normals, &norm_len, &norm_buf);
-	cl_int8 i;
-	i.s0 = id;
-	i.s1 = vert_len;
-	i.s2 = norm_len;
-	createPointBuffer (VERTEX_BUFF, m._verts, &vert_len, &vert_buf);
-	createPointBuffer (VERTEX_BUFF, m._normals, &norm_len, &norm_buf);
-	i.s3 = vert_len-1;
-	i.s4 = norm_len-1;
-	i.s5 = m.mat.id;
-	obj_buff[id] = i;
-}
-
-
-void CRayTracer::raytrace (cl_float4 *out_buff)
+void CRayTracer::raytrace (cl_float4 *img_buff)
 {
 	cl_int err;
-	cl_float3 *rays_h = new cl_float3[width*height * 2];
+	int rays = width*height;
+	Ray *rays_h = new Ray[rays];
+	makeRays (rays_h);
 
 	auto start = std::chrono::steady_clock::now ();
 
@@ -139,38 +86,35 @@ void CRayTracer::raytrace (cl_float4 *out_buff)
 	auto bld_log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG> (devices[0]);
 	checkErr (err, bld_log.c_str());
 
-	cl::Buffer rays (context, CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, width * height * 2 * sizeof (cl_float3), rays_h, &err);
+	cl::Buffer rays_in (context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, rays * sizeof (Ray), rays_h, &err);
 	checkErr (err, "Buffer::Buffer()");
-	cl::Buffer verts (context, CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, vert_len * sizeof (cl_float3), vert_buf, &err);
+	cl::Buffer mats_in (context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, numMaterial * sizeof (Mat_Struct), materialBuff, &err);
 	checkErr (err, "Buffer::Buffer()");
-	cl::Buffer norms (context, CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, norm_len * sizeof (cl_float3), norm_buf, &err);
+	cl::Buffer faces_in (context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, numFace * sizeof (Face), faceBuff, &err);
 	checkErr (err, "Buffer::Buffer()");
-	cl::Buffer mats (context, CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, mat_len * sizeof (cl_float16), mat_buf, &err);
-	checkErr (err, "Buffer::Buffer()");
-	cl::Buffer objs (context, CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, obj_len * sizeof (cl_float3), obj_buff, &err);
-	checkErr (err, "Buffer::Buffer()");
-	cl::Buffer outCl (context, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, width * height * sizeof (cl_float4), out_buff, &err);
+	cl::Buffer img_out (context, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, width * height * sizeof (cl_float4), img_buff, &err);
 	checkErr (err, "Buffer::Buffer()");
 	//cl::BufferRenderGL outGl (context, CL_MEM_WRITE_ONLY, , &err);
 
 	cl::Kernel kernel (program, "main", &err);
 	checkErr (err, "Kernel::Kernel()");
-	checkErr (kernel.setArg (0, rays), "Kernel::setArg()");
-	checkErr (kernel.setArg (1, verts), "Kernel::setArg()");
-	checkErr (kernel.setArg (2, norms), "Kernel::setArg()");
-	checkErr (kernel.setArg (3, mats), "Kernel::setArg()");
-	checkErr (kernel.setArg (4, objs), "Kernel::setArg()");
-	checkErr (kernel.setArg (5, obj_len), "Kernel::setArg()");
-	checkErr (kernel.setArg (6, outCl), "Kernel::setArg()");
+	checkErr (kernel.setArg (0, rays_in), "Kernel::setArg()");
+	checkErr (kernel.setArg (1, mats_in), "Kernel::setArg()");
+	checkErr (kernel.setArg (2, faces_in), "Kernel::setArg()");
+	checkErr (kernel.setArg (3, numFace), "Kernel::setArg()");
+	checkErr (kernel.setArg (4, img_out), "Kernel::setArg()");
 
 	cl::CommandQueue queue (context, devices[0], 0, &err);
 	checkErr (err, "CommandQueue::CommandQueue()");
 
-	cl::Event event;
-	checkErr (queue.enqueueNDRangeKernel (kernel, cl::NullRange, cl::NDRange (width * height), cl::NDRange (1, 1), NULL, &event), "ComamndQueue::enqueueNDRangeKernel ()");
-	event.wait ();
+	for (size_t i = 0; i < width*height; i++)
+		main (rays_h, materialBuff, faceBuff, numFace, img_buff, i);
 
-	checkErr (queue.enqueueReadBuffer (outCl, CL_TRUE, 0, width * height * sizeof (cl_float4), out_buff), "ComamndQueue::enqueueReadBuffer()");
+	//cl::Event event;
+	//checkErr (queue.enqueueNDRangeKernel (kernel, cl::NullRange, cl::NDRange (width * height), cl::NDRange (1, 1), NULL, &event), "ComamndQueue::enqueueNDRangeKernel ()");
+	//event.wait ();
+
+	//checkErr (queue.enqueueReadBuffer (img_out, CL_TRUE, 0, width * height * sizeof (cl_float4), img_buff), "ComamndQueue::enqueueReadBuffer()");
 
 	auto end = std::chrono::steady_clock::now ();
 	std::cerr << (end - start).count () << std::endl;
@@ -181,11 +125,8 @@ CRayTracer::CRayTracer(int width, int height)
 	kernel_file = "hw_kernel.cl";
 	this->width = width;
 	this->height = height;
-	obj_len = 0;
-	vert_len = 0;
-	norm_len = 0;
-	mat_len = 0;
-	return;
+	numMaterial = 0;
+	numFace = 0;
 }
 
 CRayTracer::CRayTracer ()

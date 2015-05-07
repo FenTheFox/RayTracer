@@ -37,4 +37,4 @@
 #include <gl\GL.h>
 #include <gl\GLU.h>
 
-#include "stringops.h"
+#include "ops.h"

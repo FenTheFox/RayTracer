@@ -39,10 +39,10 @@
     <ClInclude Include="Structs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="stringops.h">
+    <ClInclude Include="RayTracer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RayTracer.h">
+    <ClInclude Include="ops.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -62,10 +62,13 @@
     <ClCompile Include="Material.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="stringops.cpp">
+    <ClCompile Include="RayTracer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RayTracer.cpp">
+    <ClCompile Include="ops.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="kernel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

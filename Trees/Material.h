@@ -20,4 +20,9 @@ public:
 	Point3f Ka, Kd, Ks, Ke, Tf;
 	double Ns, Ni, d, Tr;
 	illum_model illum;
+
+	operator Mat_Struct() const
+	{
+		return { Ka, Kd, Ks, Ns };
+	}
 };

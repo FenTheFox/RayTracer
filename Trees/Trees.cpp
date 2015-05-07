@@ -3,9 +3,7 @@
 #include "RayTracer.h"
 #include "Material.h"
 #include "Trees.h"
-#include "stringops.h"
 
-//Read about Poisson disk sampling and dart throwing -- simple idea to generate visually pleasing distribution patterns. Also think about using Autodesk 123D to capture real tree mdels
 using namespace std;
 
 bool is_good (vector<vector<Point2f>> grid, Point2f pt, double min_dist, double cell_size)
@@ -27,40 +25,77 @@ bool is_good (vector<vector<Point2f>> grid, Point2f pt, double min_dist, double 
 
 void Trees::generateTrees (double width, double height, double min_dist, int num, int age)
 {
-	trees.push_back (pair<Point2f, Tree> (Point2f (), tree_objs[0]));
-	return;
+	vector<std::pair<Point2f, Tree>> gen_trees;
+	//double cell_size = min_dist / sqrt (2), gwidth = width / cell_size, gheight = height / cell_size, r, angle;
+	//auto grid = vector<vector<Point2f>> (gwidth, vector<Point2f> (gheight));
+	//auto worklist = deque<Point2f> ();
+	//default_random_engine gen;
+	//uniform_real_distribution<double> r_dist (0, 2), angle_dist (0, 2 * M_PI), dist (0.0, 1.0);
+	//Point2f pt = Point2f { dist (gen)*width, dist (gen)*height }, new_pt;
 
-	double cell_size = min_dist / sqrt (2), gwidth = width / cell_size, gheight = height / cell_size, r, angle;
-	auto grid = vector<vector<Point2f>> (gwidth, vector<Point2f> (gheight));
-	auto worklist = deque<Point2f> ();
-	default_random_engine gen;
-	uniform_real_distribution<double> r_dist (0, 2), angle_dist (0, 2 * M_PI), dist (0.0, 1.0);
-	Point2f pt = Point2f { dist (gen)*width, dist (gen)*height }, new_pt;
+	//worklist.push_back (pt);
+	//trees.push_back (make_pair (pt, tree_objs[dist (gen)*tree_objs.size ()]));
+	//grid[pt.x / cell_size][pt.y / cell_size] = pt;
 
-	worklist.push_back (pt);
-	trees.push_back (make_pair (pt, tree_objs[dist (gen)*tree_objs.size ()]));
-	grid[pt.x / cell_size][pt.y / cell_size] = pt;
+	//while (!worklist.empty ()) {
+	//	pt = worklist[0];
+	//	worklist.pop_front ();
+	//	random_shuffle (worklist.begin (), worklist.end ());
+	//	for (size_t i = 0; i < num; i++) {
+	//		r = r_dist (gen);
+	//		angle = angle_dist (gen);
+	//		new_pt = Point2f { pt.x + r*cos (angle), pt.y + r*sin (angle) };
+	//		if (new_pt.x > 0 && new_pt.x < width &&
+	//			 new_pt.y > 0 && new_pt.y < height &&
+	//			 is_good (grid, new_pt, min_dist, cell_size)) {
+	//			worklist.push_back (new_pt);
+	//			trees.push_back (make_pair (new_pt, tree_objs[dist (gen)*tree_objs.size ()]));
+	//			grid[min (new_pt.x / cell_size, gwidth - 1)][min (new_pt.y / cell_size, gheight - 1)] = new_pt;
+	//		}
+	//	}
+	//}
 
-	while (!worklist.empty ()) {
-		pt = worklist[0];
-		worklist.pop_front ();
-		random_shuffle (worklist.begin (), worklist.end ());
-		for (size_t i = 0; i < num; i++) {
-			r = r_dist (gen);
-			angle = angle_dist (gen);
-			new_pt = Point2f { pt.x + r*cos (angle), pt.y + r*sin (angle) };
-			if (new_pt.x > 0 && new_pt.x < width &&
-				 new_pt.y > 0 && new_pt.y < height &&
-				 is_good (grid, new_pt, min_dist, cell_size)) {
-				worklist.push_back (new_pt);
-				trees.push_back (make_pair (new_pt, tree_objs[dist (gen)*tree_objs.size ()]));
-				grid[min (new_pt.x / cell_size, gwidth - 1)][min (new_pt.y / cell_size, gheight - 1)] = new_pt;
+	gen_trees.push_back (pair<Point2f, Tree> (Point2f (), Tree(tree_objs[0])));
+	min = { -1*width, -1*height, 0.0 };
+	max = { width, height, 0.0 };
+	for each (auto tp in gen_trees)
+	{
+		for each (auto m in tp.second.meshes)
+		{
+			vector<Face> mfaces (m._verts.size () / 3);
+			for (size_t i = 0; i < m._verts.size () / 3; i++) {
+				mfaces[i].v0 = Point3f (m._verts[i * 3].x + tp.first.x, m._verts[i * 3].y + tp.first.y, m._verts[i * 3].z);
+				mfaces[i].v1 = Point3f (m._verts[i * 3 + 1].x + tp.first.x, m._verts[i * 3 + 1].y + tp.first.y, m._verts[i * 3 + 1].z);
+				mfaces[i].v2 = Point3f (m._verts[i * 3 + 2].x + tp.first.x, m._verts[i * 3 + 2].y + tp.first.y, m._verts[i * 3 + 2].z);
+				mfaces[i].n0 = Point3f (m._normals[i * 3].x + tp.first.x, m._normals[i * 3].y + tp.first.y, m._normals[i * 3].z);
+				mfaces[i].n1 = Point3f (m._normals[i * 3 + 1].x + tp.first.x, m._normals[i * 3 + 1].y + tp.first.y, m._normals[i * 3 + 1].z);
+				mfaces[i].n2 = Point3f (m._normals[i * 3 + 2].x + tp.first.x, m._normals[i * 3 + 2].y + tp.first.y, m._normals[i * 3 + 2].z);
+				mfaces[i].mat = m.mat.id;
 			}
+			faces.insert (faces.end (), mfaces.begin (), mfaces.end ());
 		}
+	}
+
+	for each (auto f in faces)
+	{
+		if (min (f.v0.x, min (f.v1.x, f.v2.x)) < min.x) min.x = min (f.v0.x, min (f.v1.x, f.v2.x));
+		if (min (f.v0.y, min (f.v1.y, f.v2.y)) < min.y) min.y = min (f.v0.y, min (f.v1.y, f.v2.y));
+		if (min (f.v0.z, min (f.v1.z, f.v2.z)) < min.z) min.z = min (f.v0.z, min (f.v1.z, f.v2.z));
+		if (max (f.v0.x, max (f.v1.x, f.v2.x)) > max.x) max.x = max (f.v0.x, max (f.v1.x, f.v2.x));
+		if (max (f.v0.y, max (f.v1.y, f.v2.y)) > max.y) max.y = max (f.v0.y, max (f.v1.y, f.v2.y));
+		if (max (f.v0.z, max (f.v1.z, f.v2.z)) > max.z) max.z = max (f.v0.z, max (f.v1.z, f.v2.z));
+	}
+
+	Point3f scale (max (-1 * min.x / width, max.x / width), max (-1 * min.y / width, max.y / width), 1);
+	for each (auto f in faces)
+	{
+		f.v0 = f.v0 / scale;
+		f.v1 = f.v1 / scale;
+		f.v2 = f.v2 / scale;
 	}
 }
 
-void Trees::parseTreeFile (string file, CRayTracer *rt)
+void Trees::parseTreeFile (string file, CRayTracer &rt)
 {
 	ifstream ifs (file);
 	string line;
@@ -70,10 +105,11 @@ void Trees::parseTreeFile (string file, CRayTracer *rt)
 
 	while (getline(ifs,line)) {
 		if (line.find ("mtllib") != string::npos) {
-			mats = Material::parseMaterials (substring (line, line.find_first_of (' ') + 1));
+			mats = Material::parseMaterials (substring (line, line.find_first_of (' ') + 1, line.size()));
 			break;
 		}
 	}
+	rt.setMatBuffer (mats);
 
 	while (getline (ifs, line, 'v')) {
 		if (ifs.good ()) {
@@ -112,8 +148,6 @@ void Trees::parseTreeFile (string file, CRayTracer *rt)
 		t.meshes.push_back (m);
 	}
 	tree_objs[0] = t;
-
-	rt->setMatBuffer (CRayTracer::MATERIAL_BUFF, mats);
 }
 
 Trees::Trees ()
