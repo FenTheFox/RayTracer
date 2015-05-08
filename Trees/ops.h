@@ -24,9 +24,6 @@ cl_float4 operator*(const cl_float4 clf, const float f);
 cl_float4 operator*(const cl_float4 clf, const cl_float4 clf2);
 cl_float4 operator+(const cl_float4 clf, const cl_float4 clf2);
 cl_float4 operator-(const cl_float4 clf, const cl_float4 clf2);
-cl_float4 operator*=(const cl_float4 clf, const float f);
-cl_float4 operator*=(const cl_float4 clf, const cl_float4 f);
-cl_float4 operator+=(const cl_float4 clf, const cl_float4 f);
 
 cl_float4 sqrt (cl_float4);
 

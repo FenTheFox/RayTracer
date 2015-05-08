@@ -12,7 +12,7 @@ vector<Material> Material::parseMaterials (const string& f)
 	while (getline (ifs, line, 'n'))
 		mats.emplace_back (ifs);
 
-	for (size_t i = 0; i < mats.size(); i++)
+	for (size_t i = 0; i < mats.size (); i++)
 		mats[i].id = i;
 
 	return mats;
@@ -26,7 +26,7 @@ Material::Material (ifstream &f)
 	if ((line = trim (line)) == "") return;
 	splitIdx = line.find_first_of (' ');
 	name = line.substr (splitIdx, line.length() - 1);*/
-	while (getline(f,line)) {
+	while (getline (f, line)) {
 		if ((line = trim (line)) == "") break;
 		splitIdx = line.find_first_of (' ');
 		fieldName = line.substr (0, splitIdx);
@@ -44,9 +44,9 @@ Material::Material (ifstream &f)
 		else if (fieldName == "Tf")
 			Tf = Point3f (field);
 		else if (fieldName == "illum")
-			illum = (illum_model)atoi (field.c_str());
+			illum = (illum_model)atoi (field.c_str ());
 		else if (fieldName == "Ns")
-			Ns = atof (field.c_str ());
+			Ns = atof (field.c_str ()) / 1000;
 		else if (fieldName == "Ni")
 			Ni = atof (field.c_str ());
 		else if (fieldName == "d")

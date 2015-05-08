@@ -128,7 +128,7 @@ KDNode *KDTree::RecBuild (std::vector<Face> faces, Voxel v)
 	//p = FindPlane (T, V) { Find a “good” plane p to split V }
 	auto split = findSplit (faces, v);
 	if (split.second > 0.8*K_i*faces.size ())
-		return new KDLeaf (faces);
+		return new KDNode (faces);
 	//(VL, VR) = Split V with p
 	auto vlvr = v.split (split.first);
 	//return new node (p, RecBuild (TL, VL), RecBuild (TR, VR))

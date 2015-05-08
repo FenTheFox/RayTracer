@@ -5,7 +5,7 @@
 #include "Mesh.h"
 #include "KDTree.h"
 #include "RayTracer.h"
-void main (Ray *rays, Light *lights, int num_lights, Mat_Struct *mats, Face *faces, int num_faces, cl_float4 *out, int idx);
+void main (Ray *rays, Light *lights, int num_lights, Mat_Struct *mats, Face *faces, int num_faces, cl_float4 *out, KDNode *head, int idx);
 
 void printCwd ()
 {
@@ -44,10 +44,10 @@ void RayTracer::setFaceBuffer (std::vector<Face> faces)
 	pos.x = 0;
 	pos.y = 100;
 	pos.z = 0;
-	intensity.s0 = 1;
-	intensity.s1 = 1;
-	intensity.s2 = 1;
-	intensity.s3 = 1;
+	intensity.s0 = 255;
+	intensity.s1 = 255;
+	intensity.s2 = 255;
+	intensity.s3 = 255;
 	lightBuff[0].pos = pos;
 	lightBuff[0].intensity = intensity;
 	lightBuff[0].type = 0;
@@ -55,8 +55,8 @@ void RayTracer::setFaceBuffer (std::vector<Face> faces)
 
 void RayTracer::makeRays (Ray * buff)
 {
-	Point3f cpos (0.0, 100.0, 300.0),
-		cdir (0.0, -1.0 / sqrt (2), -1.0 / sqrt (2)),
+	Point3f cpos (0.0, 0.0, 1000.0),
+		cdir (0.0, 0.0, -1.0),
 		cup (0.0, 1.0, 0.0),
 		cright (cdir.y*cup.z - cdir.z*cup.y, cdir.z*cup.x - cdir.x*cup.z, cdir.x*cup.y - cdir.y*cup.x);
 	cup = { cright.y*cdir.z - cright.z*cdir.y, cright.z*cdir.x - cright.x*cdir.z, cright.x*cdir.y - cright.y*cdir.x };
@@ -66,7 +66,9 @@ void RayTracer::makeRays (Ray * buff)
 		for (size_t j = 0; j < height; j++) {
 			norm_j = ((float)j / (float)height) - 0.5;
 			buff[j*width + i].pos = cpos;
-			buff[j*width + i].dir = (cright * norm_i + cup * norm_j + cpos + cdir) - cpos;
+			buff[j*width + i].dir.x = norm_i;
+			buff[j*width + i].dir.y = norm_j;
+			buff[j*width + i].dir.z = -1;
 		}
 	}
 }
@@ -126,15 +128,19 @@ void RayTracer::raytrace (cl_float4 *img_buff)
 	cl::CommandQueue queue (context, devices[0], 0, &err);
 	checkErr (err, "CommandQueue::CommandQueue()");
 
-	for (size_t i = 0; i < width*height; i++) {
-		main (rays_h, lightBuff, numLight, materialBuff, faceBuff, numFace, img_buff, i);
+	BYTE *pixles = new BYTE[width*height * 3];
 
+	for (size_t i = 0; i < width*height; i++) {
+		main (rays_h, lightBuff, numLight, materialBuff, faceBuff, numFace, img_buff, kdtree.head, i);
+		pixles[i * 3] = img_buff[i].x * 255;
+		pixles[i * 3 + 1] = img_buff[i].y * 255;
+		pixles[i * 3 + 2] = img_buff[i].z * 255;
 		glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glLoadIdentity ();
 		glBindTexture (GL_TEXTURE_2D, 1);
 		glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexImage2D (GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_FLOAT, img_buff);
+		glTexImage2D (GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, pixles);
 
 		glClearColor (0, 0, 1, 1);
 		glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -11,24 +11,21 @@ struct KDNode
 		this->lchild = lchild;
 		this->rchild = rchild;
 	}
+	KDNode (std::vector<Face> f) { faces = f; }
 
 	Plane p;
 	KDNode *lchild, *rchild;
-};
-
-struct KDLeaf : public KDNode
-{
-	KDLeaf (std::vector<Face> f) { faces = f; }
-
+	bool isLeaf;
 	std::vector<Face> faces;
 };
 
 class KDTree
 {
 	KDNode *RecBuild (std::vector<Face> faces, Voxel v);
-	KDNode *head;
 public:
 	KDTree ();
 	KDTree (std::vector<Face> faces);
 	~KDTree ();
+
+	KDNode *head;
 };
