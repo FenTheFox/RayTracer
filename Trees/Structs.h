@@ -70,7 +70,9 @@ struct Point3f
 {
 	float x, y, z;
 
-	Point3f () {}
+	Point3f () {
+		x = y = z = 0;
+	}
 	Point3f (float x, float y, float z)
 	{
 		this->x = x;
@@ -110,40 +112,27 @@ struct Point3f
 	}
 };
 
+enum Side
+{
+	LEFT, RIGHT
+};
 struct Plane
 {
 	Point3f pt, normal;
+	Side s;
 };
 
 struct Voxel
 {
 	static std::pair<Point3f, Point3f> B (Face t)
 	{
-		std::vector<Face> tri (1);
-		tri[0] = t;
-		Voxel v (tri);
-		return std::make_pair (Point3f (v.minx, v.miny, v.minz), Point3f (v.maxx, v.maxy, v.maxz));
+		return std::make_pair (
+			Point3f (min (t.v0.x, min (t.v1.x, t.v2.x)), min (t.v0.y, min (t.v1.y, t.v2.y)), min (t.v0.z, min (t.v1.z, t.v2.z))),
+			Point3f (max (t.v0.x, max (t.v1.x, t.v2.x)), max (t.v0.y, max (t.v1.y, t.v2.y)), max (t.v0.z, max (t.v1.z, t.v2.z))));
 	}
 
-	double minx, miny, minz, maxx, maxy, maxz;
-
-	Voxel () {}
-	Voxel (std::vector<Face> triangles)
-	{
-		minx = maxx = triangles[0].v0.x;
-		miny = maxy = triangles[0].v0.y;
-		minz = maxz = triangles[0].v0.z;
-		for each (auto t in triangles)
-		{
-			if (min (t.v0.x, min (t.v1.x, t.v2.x)) < minx) minx = min (t.v0.x, min (t.v1.x, t.v2.x));
-			if (min (t.v0.y, min (t.v1.y, t.v2.y)) < miny) miny = min (t.v0.y, min (t.v1.y, t.v2.y));
-			if (min (t.v0.z, min (t.v1.z, t.v2.z)) < minz) minz = min (t.v0.z, min (t.v1.z, t.v2.z));
-			if (max (t.v0.x, max (t.v1.x, t.v2.x)) > maxx) maxx = max (t.v0.x, max (t.v1.x, t.v2.x));
-			if (max (t.v0.y, max (t.v1.y, t.v2.y)) > maxy) maxy = max (t.v0.y, max (t.v1.y, t.v2.y));
-			if (max (t.v0.z, max (t.v1.z, t.v2.z)) > maxz) maxz = max (t.v0.z, max (t.v1.z, t.v2.z));
-		}
-		this->triangles = triangles;
-	}
+	double minx, miny, minz;
+	double maxx, maxy, maxz;
 
 	double surfaceArea ()
 	{
@@ -152,28 +141,37 @@ struct Voxel
 
 	std::pair<Voxel, Voxel> split (Plane p)
 	{
-		//l is side with p.normal
-		std::vector<Face> l (triangles.size ()), r (triangles.size ());
-		for each (auto t in triangles)
-		{
-			if (p.normal.dot (t.v0) > 0 && p.normal.dot (t.v1) > 0 && p.normal.dot (t.v2) > 0) {
-				l.push_back (t);
-			} else if (p.normal.dot (t.v0) < 0 && p.normal.dot (t.v1) < 0 && p.normal.dot (t.v2) < 0) {
-				r.push_back (t);
-			} else {
-				r.push_back (t); l.push_back (t);
-			}
+		Voxel vl = { minx, miny, minz, maxx, maxy, maxz };
+		Voxel vr = { minx, miny, minz, maxx, maxy, maxz };
+		if (p.normal.x == 1) {
+			vl.maxx = p.pt.x;
+			vr.minx = p.pt.x;
+		} else if (p.normal.y == 1) {
+			vl.maxy = p.pt.y;
+			vr.miny = p.pt.y;
+		} else {
+			vl.maxz = p.pt.z;
+			vr.minz = p.pt.z;
 		}
-		return std::make_pair (Voxel (r), Voxel (l));
+
+		return std::make_pair (vl, vr);
 	}
 
 	bool intersect (Face tri)
 	{
-		double tminx = min (tri.v0.x, min (tri.v1.x, tri.v2.x)), tminy = min (tri.v0.y, min (tri.v1.y, tri.v2.y)), tminz = min (tri.v0.z, min (tri.v1.z, tri.v2.z)),
-			tmaxx = max (tri.v0.x, max (tri.v1.x, tri.v2.x)), tmaxy = max (tri.v0.y, max (tri.v1.y, tri.v2.y)), tmaxz = max (tri.v0.z, max (tri.v1.z, tri.v2.z));
-		return tminx > maxx || tmaxx < minx || tminy > maxy || tmaxy < minx || tminz > maxz || tmaxz < minx;
+		auto aabb = Voxel::B(tri);
+		return ((aabb.first.x < maxx && aabb.first.x > minx) || (aabb.second.x > minx && aabb.second.x < maxx)) &&
+			((aabb.first.y < maxy && aabb.first.y > miny) || (aabb.second.y > miny && aabb.second.y < maxy)) &&
+			((aabb.first.z < maxz && aabb.first.z > minz) || (aabb.second.z > minz && aabb.second.z < maxz));
 	}
 
-	std::vector<Face> triangles;
+	std::vector<Face> intersect (std::vector<Face> triangles)
+	{
+		std::vector<Face> ret;
+		for each (auto f in triangles)
+			if (intersect (f))
+				ret.push_back (f);
+		return ret;
+	}
 };
 #endif

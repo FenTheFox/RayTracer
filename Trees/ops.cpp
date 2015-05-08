@@ -68,6 +68,15 @@ cl_float4 operator+(const cl_float4 clf, const cl_float4 clf2)
 	return res;
 }
 
+cl_float4 operator-(const cl_float4 clf, const cl_float4 clf2)
+{
+	cl_float4 res;
+	res.w = clf.w - clf2.w;
+	res.x = clf.x - clf2.x;
+	res.y = clf.y - clf2.y;
+	res.z = clf.z - clf2.z;
+	return res;
+}
 
 cl_float4 operator/(const cl_float4 clf, const Point3f p)
 {

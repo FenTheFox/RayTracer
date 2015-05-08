@@ -26,38 +26,38 @@ bool is_good (vector<vector<Point2f>> grid, Point2f pt, double min_dist, double 
 void Trees::generateTrees (double width, double height, int num, int age)
 {
 	vector<std::pair<Point2f, Tree>> gen_trees;
-	double cell_size = min_dist / sqrt (2), r, angle;
-	size_t gwidth = width / cell_size, gheight = height / cell_size;
-	auto grid = vector<vector<Point2f>> (gwidth, vector<Point2f> (gheight));
-	auto worklist = deque<Point2f> ();
-	default_random_engine gen;
-	uniform_real_distribution<double> r_dist (0, 2 * min_dist), angle_dist (0, 2 * M_PI), dist (0.0, 1.0);
-	Point2f pt = Point2f { dist (gen)*width, dist (gen)*height }, new_pt;
+	//double cell_size = min_dist / sqrt (2), r, angle;
+	//size_t gwidth = width / cell_size, gheight = height / cell_size;
+	//auto grid = vector<vector<Point2f>> (gwidth, vector<Point2f> (gheight));
+	//auto worklist = deque<Point2f> ();
+	//default_random_engine gen;
+	//uniform_real_distribution<double> r_dist (0, 2 * min_dist), angle_dist (0, 2 * M_PI), dist (0.0, 1.0);
+	//Point2f pt = Point2f { dist (gen)*width, dist (gen)*height }, new_pt;
 
-	worklist.push_back (pt);
-	gen_trees.push_back (make_pair (pt, tree_objs[dist (gen)*tree_objs.size ()]));
-	grid[pt.x / cell_size][pt.y / cell_size] = pt;
+	//worklist.push_back (pt);
+	//gen_trees.push_back (make_pair (pt, tree_objs[dist (gen)*tree_objs.size ()]));
+	//grid[pt.x / cell_size][pt.y / cell_size] = pt;
 
-	while (!worklist.empty ()) {
-		pt = worklist[0];
-		worklist.pop_front ();
-		random_shuffle (worklist.begin (), worklist.end ());
-		for (size_t i = 0; i < num; i++) {
-			r = r_dist (gen);
-			angle = angle_dist (gen);
-			new_pt = Point2f { pt.x + r*cos (angle), pt.y + r*sin (angle) };
-			if (new_pt.x > 0 && new_pt.x < width &&
-				 new_pt.y > 0 && new_pt.y < height &&
-				 is_good (grid, new_pt, min_dist, cell_size)) {
-				worklist.push_back (new_pt);
-				gen_trees.push_back (make_pair (new_pt, tree_objs[dist (gen)*tree_objs.size ()]));
-				grid[min (new_pt.x / cell_size, gwidth - 1)][min (new_pt.y / cell_size, gheight - 1)] = new_pt;
-			}
-		}
-	}
+	//while (!worklist.empty ()) {
+	//	pt = worklist[0];
+	//	worklist.pop_front ();
+	//	random_shuffle (worklist.begin (), worklist.end ());
+	//	for (size_t i = 0; i < num; i++) {
+	//		r = r_dist (gen);
+	//		angle = angle_dist (gen);
+	//		new_pt = Point2f { pt.x + r*cos (angle), pt.y + r*sin (angle) };
+	//		if (new_pt.x > 0 && new_pt.x < width &&
+	//			 new_pt.y > 0 && new_pt.y < height &&
+	//			 is_good (grid, new_pt, min_dist, cell_size)) {
+	//			worklist.push_back (new_pt);
+	//			gen_trees.push_back (make_pair (Point2f { new_pt.x - width / 2, new_pt.y - height / 2 }, tree_objs[dist (gen)*tree_objs.size ()]));
+	//			grid[min (new_pt.x / cell_size, gwidth - 1)][min (new_pt.y / cell_size, gheight - 1)] = new_pt;
+	//		}
+	//	}
+	//}
 
 	//gen_trees.push_back (pair<Point2f, Tree> (Point2f { -min_dist, 0.0 }, Tree (tree_objs[0])));
-	//gen_trees.push_back (pair<Point2f, Tree> (Point2f { 0.0, min_dist }, Tree (tree_objs[0])));
+	gen_trees.push_back (pair<Point2f, Tree> (Point2f { 0.0, 0.0 }, Tree (tree_objs[0])));
 	//gen_trees.push_back (pair<Point2f, Tree> (Point2f { min_dist, 0.0 }, Tree (tree_objs[0])));
 	min = { -1 * width, -1 * height, 0.0 };
 	max = { width, height, 0.0 };

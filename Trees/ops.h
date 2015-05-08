@@ -12,8 +12,8 @@ struct Face;
 std::string trim (std::string, std::string = " \t");
 std::string substring (std::string, size_t, size_t);
 
-enum CARDINAL {X, Y, Z};
-template <CARDINAL c>
+enum DIMENTION {X, Y, Z};
+template <DIMENTION c>
 bool comp (Face f1, Face f2)
 {
 	return min (f1.v0.s[c], min (f1.v2.s[c], f1.v2.s[c])) < min (f2.v0.s[c], min (f2.v2.s[c], f2.v2.s[c]));
@@ -23,6 +23,7 @@ cl_float4 operator/(const cl_float4, const float);
 cl_float4 operator*(const cl_float4 clf, const float f);
 cl_float4 operator*(const cl_float4 clf, const cl_float4 clf2);
 cl_float4 operator+(const cl_float4 clf, const cl_float4 clf2);
+cl_float4 operator-(const cl_float4 clf, const cl_float4 clf2);
 cl_float4 operator*=(const cl_float4 clf, const float f);
 cl_float4 operator*=(const cl_float4 clf, const cl_float4 f);
 cl_float4 sqrt (cl_float4);

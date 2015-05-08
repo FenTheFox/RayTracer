@@ -8,6 +8,7 @@ typedef struct Hit
 	float t;
 	float4 pos;
 	float4 norm;
+	int idx;
 } Hit;
 
 Hit hit_shape (Face f, Ray ray, float tmax)
@@ -41,7 +42,7 @@ Hit hit_shape (Face f, Ray ray, float tmax)
 	return h;
 }
 
-void main (Ray *rays, Mat_Struct *mats, Face *faces, int num_faces, float4 *out, int idx)
+void main (Ray *rays, Light *lights, int num_lights, Mat_Struct *mats, Face *faces, int num_faces, float4 *out, int idx)
 {
 	Ray r = rays[idx];
 	Hit h = { 1000, { 0, 0, 0, 0 }, { 0, 0, 0, 0 } }, shape_hit;
@@ -49,10 +50,31 @@ void main (Ray *rays, Mat_Struct *mats, Face *faces, int num_faces, float4 *out,
 		if ((shape_hit = hit_shape (faces[i], r, h.t)).t != 0)
 			h = shape_hit;
 	}
-	if (h.t < 1000) {
-		out[idx].s0 = max (h.norm.x, -1 * h.norm.x);
-		out[idx].s1 = max (h.norm.y, -1 * h.norm.y);
-		out[idx].s2 = max (h.norm.z, -1 * h.norm.z);
-		out[idx].s3 = 1;
+
+	float4 ambient, background;
+	ambient.s0 = 0.01;
+	ambient.s1 = 0.01;
+	ambient.s2 = 0.01;
+
+	background.s0 = 0.1;
+	background.s0 = 0.5;
+	background.s0 = 0.1;
+	background.s0 = 1.0;
+
+	if (h.t == 1000) {
+		out[idx] = background;
+		return;
 	}
+
+	Mat_Struct mat = mats[faces[h.idx].mat];
+	out[idx] = ambient * mat.Ka;
+	Light l;
+	for (int i = 0; i < num_lights; i++) {
+		if (lights[i].type == 0) l.dir = lights[i].pos - h.pos;
+		l.pos = lights[i].pos;
+		l.intensity = lights[i].intensity;
+	}
+	
+	
+	out[idx].s3 = 1;
 }

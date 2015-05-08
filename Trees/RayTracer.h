@@ -10,8 +10,9 @@ class RayTracer {
 
 	Face *faceBuff;
 	KDTree kdtree;
+	Light *lightBuff;
 	Mat_Struct *materialBuff;
-	int numFace, numMaterial;
+	int numFace, numLight, numMaterial;
 
 	void makeRays (Ray *);
 public:

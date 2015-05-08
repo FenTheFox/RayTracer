@@ -167,7 +167,7 @@ bool DrawGLScene ()
 	double h = 10.0, w = h * ((GLfloat)width / (GLfloat)height);
 	rt = RayTracer (width, height);
 	rt.setMatBuffer(t.parseTreeFile ("test.obj"));
-	t.generateTrees (width, height, 10, 0);
+	t.generateTrees (width, width, 10, 0);
 	rt.setFaceBuffer (t.faces);
 	rt.raytrace (ptr);
 	glBindTexture (GL_TEXTURE_2D, 1);

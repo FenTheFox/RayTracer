@@ -5,13 +5,12 @@
 #include "Mesh.h"
 #include "KDTree.h"
 #include "RayTracer.h"
-
-void main (Ray *rays, Mat_Struct *mats, Face *faces, int num_faces, cl_float4 *out, int idx);
+void main (Ray *rays, Light *lights, int num_lights, Mat_Struct *mats, Face *faces, int num_faces, cl_float4 *out, int idx);
 
 void printCwd ()
 {
 	char cwd[FILENAME_MAX];
-	_getcwd (cwd, FILENAME_MAX);
+	auto ret = _getcwd (cwd, FILENAME_MAX);
 	std::cerr << cwd << std::endl;
 }
 
@@ -39,14 +38,31 @@ void RayTracer::setFaceBuffer (std::vector<Face> faces)
 		faceBuff[i] = faces[i];
 
 	kdtree = KDTree (faces);
+	numLight = 1;
+	lightBuff = new Light[numLight];
+	cl_float4 pos, intensity;
+	pos.x = 0;
+	pos.y = 100;
+	pos.z = 0;
+	intensity.s0 = 1;
+	intensity.s1 = 1;
+	intensity.s2 = 1;
+	intensity.s3 = 1;
+	lightBuff[0].pos = pos;
+	lightBuff[0].intensity = intensity;
+	lightBuff[0].type = 0;
 }
 
 void RayTracer::makeRays (Ray * buff)
 {
-	Point3f cpos (0.0, 0.0, 500.0), cdir (0.0, 0.0, -1.0), cup (0.0, 1.0, 0.0), cright (1.0, 0.0, 0.0);
+	Point3f cpos (0.0, 100.0, 100.0),
+		cdir (0.0, -1.0 / sqrt (2), -1.0 / sqrt (2)),
+		cup (0.0, 1.0, 0.0),
+		cright (cdir.y*cup.z - cdir.z*cup.y, cdir.z*cup.x - cdir.x*cup.z, cdir.x*cup.y - cdir.y*cup.x);
+	cup = { cright.y*cdir.z - cright.z*cdir.y, cright.z*cdir.x - cright.x*cdir.z, cright.x*cdir.y - cright.y*cdir.x };
 	double norm_i, norm_j;
 	for (size_t i = 0; i < width; i++) {
-		norm_i = ((float)i / (float)width);
+		norm_i = ((float)i / (float)width) - 0.5;
 		for (size_t j = 0; j < height; j++) {
 			norm_j = ((float)j / (float)height) - 0.5;
 			buff[j*width + i].pos = cpos;
@@ -113,7 +129,7 @@ void RayTracer::raytrace (cl_float4 *img_buff)
 	checkErr (err, "CommandQueue::CommandQueue()");
 
 	for (size_t i = 0; i < width*height; i++)
-		main (rays_h, materialBuff, faceBuff, numFace, img_buff, i);
+		main (rays_h, lightBuff, numLight, materialBuff, faceBuff, numFace, img_buff, i);
 
 	//cl::Event event;
 	//checkErr (queue.enqueueNDRangeKernel (kernel, cl::NullRange, cl::NDRange (width * height), cl::NDRange (1, 1), NULL, &event), "ComamndQueue::enqueueNDRangeKernel ()");

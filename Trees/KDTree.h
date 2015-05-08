@@ -26,6 +26,7 @@ struct KDLeaf : public KDNode
 class KDTree
 {
 	KDNode *RecBuild (std::vector<Face> faces, Voxel v);
+	KDNode *head;
 public:
 	KDTree ();
 	KDTree (std::vector<Face> faces);
