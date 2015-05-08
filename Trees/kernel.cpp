@@ -43,10 +43,74 @@ struct StackElem
 void main (Ray *rays, Light *lights, int num_lights, Mat_Struct *mats, Face *faces, int num_faces, float4 *out, KDNode *head, int idx)
 {
 	Ray r = rays[idx];
+	float global_tmin, global_tmax;
+	Hit *gmin, *gmax;
+	if((gmin = head->aabb.intersect (r, 0, 100000)) == NULL) return;
+	global_tmin = gmin->t;
+	if((gmax = head->aabb.intersect (r, global_tmin + 1, 10000)) == NULL) return;
+	global_tmax = gmax->t;
+
 	Hit h = { 10000, { 0, 0, 0, 0 }, { 0, 0, 0, 0 } }, shape_hit;
-	for (int i = 0; i < num_faces; i++) {
-		if ((shape_hit = hit_shape (faces[i], r, h.t)).t != 0)
-			h = shape_hit;
+	std::stack<StackElem> stack;
+	stack.push ({ head, global_tmin, global_tmax });
+
+	StackElem se;
+	KDNode *node, *nnear, *nfar;
+	float entry, exit_dist, t;
+	int a;
+	while (!stack.empty ()) {
+		se = stack.top ();
+		stack.pop ();
+		node = se.node;
+		entry = se.entry_dist;
+		exit_dist = se.exit_dist;
+		while (!node->isLeaf) {
+			if (node->p.normal.x) {
+				t = (node->p.pt.x - r.pos.x) / r.dir.x;
+				if (node->lchild->p.pt.x > r.pos.x) {
+					nnear = node->lchild;
+					nfar = node->rchild;
+				} else {
+					nnear = node->rchild;
+					nfar = node->lchild;
+				}
+			} else if (node->p.normal.y) {
+				t = (node->p.pt.y - r.pos.y) / r.dir.y;
+				if (node->lchild->p.pt.y > r.pos.y) {
+					nnear = node->lchild;
+					nfar = node->rchild;
+				} else {
+					nnear = node->rchild;
+					nfar = node->lchild;
+				}
+			} else {
+				t = (node->p.pt.z - r.pos.z) / r.dir.z;
+				if (node->lchild->p.pt.z > r.pos.z) {
+					nnear = node->lchild;
+					nfar = node->rchild;
+				} else {
+					nnear = node->rchild;
+					nfar = node->lchild;
+				}
+			}
+
+			if (t >= exit_dist || t < 0)
+				node = node->lchild;
+			else if (t < entry)
+				node = node->rchild;
+			else {
+				stack.push (StackElem { nfar, t, exit_dist });
+				node = nnear;
+				exit_dist = t;
+			}
+		}
+
+		if (!node->faces.empty()) {
+			for (size_t i = 0; i < node->faces.size(); i++) {
+				if ((shape_hit = hit_shape (node->faces[i], r, h.t)).t != 0)
+					h = shape_hit;
+			}
+		}
 	}
 
 	float4 ambient, background;
