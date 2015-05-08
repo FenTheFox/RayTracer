@@ -45,7 +45,7 @@ Hit hit_shape (Face f, Ray ray, float tmax)
 void main (Ray *rays, Light *lights, int num_lights, Mat_Struct *mats, Face *faces, int num_faces, float4 *out, int idx)
 {
 	Ray r = rays[idx];
-	Hit h = { 1000, { 0, 0, 0, 0 }, { 0, 0, 0, 0 } }, shape_hit;
+	Hit h = { 10000, { 0, 0, 0, 0 }, { 0, 0, 0, 0 } }, shape_hit;
 	for (int i = 0; i < num_faces; i++) {
 		if ((shape_hit = hit_shape (faces[i], r, h.t)).t != 0)
 			h = shape_hit;
@@ -57,11 +57,11 @@ void main (Ray *rays, Light *lights, int num_lights, Mat_Struct *mats, Face *fac
 	ambient.s2 = 0.01;
 
 	background.s0 = 0.1;
-	background.s0 = 0.5;
-	background.s0 = 0.1;
-	background.s0 = 1.0;
+	background.s1 = 0.1;
+	background.s2 = 0.1;
+	background.s3 = 1.0;
 
-	if (h.t == 1000) {
+	if (h.t == 10000) {
 		out[idx] = background;
 		return;
 	}
@@ -69,10 +69,29 @@ void main (Ray *rays, Light *lights, int num_lights, Mat_Struct *mats, Face *fac
 	Mat_Struct mat = mats[faces[h.idx].mat];
 	out[idx] = ambient * mat.Ka;
 	Light l;
+	float4 R, N = h.norm, V = r.dir;
+	V *= -1.0f;
+	float LdirdotN, d, s;
 	for (int i = 0; i < num_lights; i++) {
 		if (lights[i].type == 0) l.dir = lights[i].pos - h.pos;
 		l.pos = lights[i].pos;
 		l.intensity = lights[i].intensity;
+		LdirdotN = (l.dir.x*N.x + l.dir.y*N.y + l.dir.z*N.z);
+		R = h.norm;
+		R *= 2 * LdirdotN;
+		R = R - l.dir;
+		d = max (LdirdotN, 0);
+
+		//l.pos = l.pos - h.pos;
+		//Hit sh = { 10000, { 0, 0, 0, 0 }, { 0, 0, 0, 0 } };
+		//Ray sray = {h.pos, l.dir};
+		//for (int j = 0; j < num_faces; j++) {
+		//	sh = hit_shape (faces[j], sray, sh.t);
+		//}
+
+		//if (sh.t < sqrt (l.pos.x*l.pos.x + l.pos.y*l.pos.y + l.pos.z*l.pos.z))
+		//	continue;
+
 	}
 	
 	

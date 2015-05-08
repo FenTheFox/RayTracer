@@ -102,6 +102,21 @@ struct Point3f
 		return x * pt.x + y * pt.y + z * pt.z;
 	}
 
+	Point3f operator*(const Point3f pt)
+	{
+		return { x*pt.x, y*pt.y, z*pt.z };
+	}
+
+	Point3f operator*(const float f)
+	{
+		return { x*f, y*f, z*f };
+	}
+
+	Point3f operator+(const Point3f pt)
+	{
+		return { x+pt.x, y+pt.y, z+pt.z };
+	}
+
 	operator cl_float4() const
 	{
 		cl_float4 fl;

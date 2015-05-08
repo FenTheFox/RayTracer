@@ -98,9 +98,6 @@ void Trees::generateTrees (double width, double height, int num, int age)
 			f.v2 = f.v2 / scale;
 		}
 	}
-
-	size_t mid = faces.size () / 2;
-	nth_element (faces.begin (), faces.begin () + mid, faces.end (), comp<X>);
 }
 
 vector<Material> Trees::parseTreeFile (string file)

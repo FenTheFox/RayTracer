@@ -97,6 +97,15 @@ cl_float4 operator*=(cl_float4 clf, const cl_float4 f)
 	return clf;
 }
 
+cl_float4 operator+=(cl_float4 clf, const cl_float4 f)
+{
+	clf.w = clf.w + f.w;
+	clf.x = clf.x + f.x;
+	clf.y = clf.y + f.y;
+	clf.z = clf.z + f.z;
+	return clf;
+}
+
 cl_float4 sqrt (cl_float4 clf)
 {
 	cl_float4 res;
