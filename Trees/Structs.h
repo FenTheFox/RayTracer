@@ -1,6 +1,7 @@
 #ifndef __OPENCL_C_VERSION__
 #pragma once
 #include <math.h>
+#define float4 cl_float4
 #else
 #define cl_float4 float4
 #define cl_float float
@@ -49,6 +50,15 @@ struct Mat_Struct
 	cl_float pad[3];
 };
 #pragma pack()
+#define DOT(v1,v2) (v1.x*v2.x+v1.y*v2.y+v1.z*v2.z)
+
+typedef struct Hit
+{
+	float t;
+	float4 pos;
+	float4 norm;
+	int idx;
+} Hit;
 
 #ifndef __OPENCL_C_VERSION__
 struct Point2f
@@ -117,6 +127,11 @@ struct Point3f
 		return { x+pt.x, y+pt.y, z+pt.z };
 	}
 
+	Point3f operator-(const cl_float4 pt)
+	{
+		return { x - pt.x, y - pt.y, z - pt.z };
+	}
+
 	operator cl_float4() const
 	{
 		cl_float4 fl;
@@ -135,6 +150,19 @@ struct Plane
 {
 	Point3f pt, normal;
 	Side s;
+
+	Hit *intersect (Ray r, float tmin, float tmax)
+	{
+		Point3f tmp (pt);
+		tmp = tmp - r.pos;
+		float denom = DOT(r.dir, normal), t;
+		if (denom == 0.0f) return NULL;
+		t = DOT(tmp, normal);
+		if (t < tmin || t > tmax) return NULL;
+		Hit *h = new Hit ();
+		h->pos = r.dir * t + r.pos;
+		h->t = t;
+	}
 };
 
 struct Voxel
@@ -187,6 +215,25 @@ struct Voxel
 			if (intersect (f))
 				ret.push_back (f);
 		return ret;
+	}
+
+	Hit *intersect (Ray r, float tmin, float tmax)
+	{
+		Plane pminx { Point3f { minx, 0, 0 }, Point3f { 1.0, 0.0, 0.0 } }, pminy { Point3f { 0, miny, 0 }, Point3f { 0.0, 1.0, 0.0 } }, pminz { Point3f { 0, 0, minz }, Point3f { 0.0, 0.0, 1.0 } },
+			pmaxx { Point3f { maxx, 0, 0 }, Point3f { 1.0, 0.0, 0.0 } }, pmaxy { Point3f { 0, maxy, 0 }, Point3f { 0.0, 1.0, 0.0 } }, pmaxz { Point3f { 0, 0, maxz }, Point3f { 0.0, 0.0, 1.0 } };
+		Hit *hits[6], *closest;
+		hits[0] = pminx.intersect (r, tmin, tmax);
+		hits[1] = pminy.intersect (r, tmin, tmax);
+		hits[2] = pminz.intersect (r, tmin, tmax);
+		hits[3] = pmaxx.intersect (r, tmin, tmax);
+		hits[4] = pmaxy.intersect (r, tmin, tmax);
+		hits[5] = pmaxz.intersect (r, tmin, tmax);
+
+		closest = hits[0];
+		for (size_t i = 1; i < 6; i++)
+			if (closest == NULL || (hits[i] != NULL && hits[i]->t < closest->t))
+				closest = hits[i];
+		return closest;
 	}
 };
 #endif

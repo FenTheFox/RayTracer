@@ -166,7 +166,7 @@ bool DrawGLScene ()
 	glLoadIdentity ();
 	double h = 10.0, w = h * ((GLfloat)width / (GLfloat)height);
 	rt = RayTracer (width, height);
-	rt.setMatBuffer (t.parseTreeFile ("test.obj"));
+	rt.setMatBuffer (t.parseTreeFile ("trees.obj"));
 	t.generateTrees (width, width, 10, 0);
 	rt.setFaceBuffer (t.faces);
 	rt.raytrace (ptr);

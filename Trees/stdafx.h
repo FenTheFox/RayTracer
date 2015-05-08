@@ -27,6 +27,7 @@
 #include <fstream>
 #include <list>
 #include <random>
+#include <stack>
 #include <string>
 #include <vector>
 

@@ -3,7 +3,7 @@
 #include "KDTree.h"
 
 #define K_t 1
-#define K_i 1.2
+#define K_i 1
 
 enum EVENT_TYPE
 {
@@ -48,10 +48,6 @@ std::pair<double, Side> SAH (Voxel v, Plane p, int Nl, int Nr, int Np)
 	float Pl = vlvr.first.surfaceArea () / v.surfaceArea (), Pr = vlvr.second.surfaceArea () / v.surfaceArea (), Cl, Cr;
 	Cl = K_t + K_i*(Pl*(Nl + Np) + Pr*Nr);
 	Cr = K_t + K_i*(Pl*Nl + Pr*(Nr + Np));
-	if (Nl == 0)
-		Cr *= 0.8;
-	if (Nr == 0)
-		Cl *= 0.8;
 	if (Cl <= Cr)
 		return std::make_pair (Cl, LEFT);
 	else
@@ -133,7 +129,7 @@ KDNode *KDTree::RecBuild (std::vector<Face> faces, Voxel v)
 	auto vlvr = v.split (split.first);
 	//return new node (p, RecBuild (TL, VL), RecBuild (TR, VR))
 	std::vector<Face> tl = vlvr.first.intersect (faces), tr = vlvr.second.intersect (faces);
-	return new KDNode (split.first, RecBuild (tl, vlvr.first), RecBuild (tr, vlvr.second));
+	return new KDNode (v, split.first, RecBuild (tl, vlvr.first), RecBuild (tr, vlvr.second), faces.size ());
 }
 
 KDTree::KDTree (std::vector<Face> faces)

@@ -38,24 +38,28 @@ void RayTracer::setFaceBuffer (std::vector<Face> faces)
 		faceBuff[i] = faces[i];
 
 	kdtree = KDTree (faces);
-	numLight = 1;
+	numLight = 100;
 	lightBuff = new Light[numLight];
 	cl_float4 pos, intensity;
-	pos.x = 0;
-	pos.y = 100;
-	pos.z = 0;
-	intensity.s0 = 255;
-	intensity.s1 = 255;
-	intensity.s2 = 255;
-	intensity.s3 = 255;
-	lightBuff[0].pos = pos;
-	lightBuff[0].intensity = intensity;
-	lightBuff[0].type = 0;
+	for (size_t i = 0; i < 10; i++) {
+		for (size_t j = 0; j < 10; j++) {
+			pos.x = (i - 5) * 100;
+			pos.y = 100;
+			pos.z = (j - 5) * 100;
+			intensity.s0 = 1000;
+			intensity.s1 = 1000;
+			intensity.s2 = 1000;
+			intensity.s3 = 1000;
+			lightBuff[0].pos = pos;
+			lightBuff[0].intensity = intensity;
+			lightBuff[0].type = 0;
+		}
+	}
 }
 
 void RayTracer::makeRays (Ray * buff)
 {
-	Point3f cpos (0.0, 0.0, 1000.0),
+	Point3f cpos (0.0, 0.0, 500.0),
 		cdir (0.0, 0.0, -1.0),
 		cup (0.0, 1.0, 0.0),
 		cright (cdir.y*cup.z - cdir.z*cup.y, cdir.z*cup.x - cdir.x*cup.z, cdir.x*cup.y - cdir.y*cup.x);
@@ -105,7 +109,7 @@ void RayTracer::raytrace (cl_float4 *img_buff)
 	cl::Program program (context, source);
 	err = program.build (devices, "-g");
 	auto bld_log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG> (devices[0]);
-	checkErr (err, bld_log.c_str());
+	checkErr (err, bld_log.c_str ());
 
 	cl::Buffer rays_in (context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, rays * sizeof (Ray), rays_h, &err);
 	checkErr (err, "Buffer::Buffer()");
@@ -170,7 +174,7 @@ void RayTracer::raytrace (cl_float4 *img_buff)
 	std::cerr << (end - start).count () << std::endl;
 }
 
-RayTracer::RayTracer(int width, int height)
+RayTracer::RayTracer (int width, int height)
 {
 	kernel_file = "hw_kernel.cl";
 	this->width = width;

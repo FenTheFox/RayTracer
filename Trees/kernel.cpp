@@ -2,17 +2,6 @@
 #include "Structs.h"
 #include "KDTree.h"
 
-#define float4 cl_float4
-#define DOT(v1,v2) (v1.x*v2.x+v1.y*v2.y+v1.z*v2.z)
-
-typedef struct Hit
-{
-	float t;
-	float4 pos;
-	float4 norm;
-	int idx;
-} Hit;
-
 Hit hit_shape (Face f, Ray ray, float tmax)
 {
 	Hit h = {};
@@ -45,6 +34,12 @@ Hit hit_shape (Face f, Ray ray, float tmax)
 	return h;
 }
 
+struct StackElem
+{
+	KDNode *node;
+	float entry_dist, exit_dist;
+};
+
 void main (Ray *rays, Light *lights, int num_lights, Mat_Struct *mats, Face *faces, int num_faces, float4 *out, KDNode *head, int idx)
 {
 	Ray r = rays[idx];
@@ -53,7 +48,6 @@ void main (Ray *rays, Light *lights, int num_lights, Mat_Struct *mats, Face *fac
 		if ((shape_hit = hit_shape (faces[i], r, h.t)).t != 0)
 			h = shape_hit;
 	}
-
 
 	float4 ambient, background;
 	ambient.s0 = 0.1;

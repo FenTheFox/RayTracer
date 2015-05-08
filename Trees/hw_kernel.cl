@@ -1,11 +1,5 @@
 #include "C:\Users\Timm\OneDrive\Documents\Visual Studio 2013\Projects\RayTracer\Trees\Structs.h"
 
-typedef struct Hit {
-	float t;
-	float4 pos;
-	float4 norm;
-} Hit;
-
 Hit hit_shape(Face f, Ray ray, float tmax)
 {
 	Hit h = {};
