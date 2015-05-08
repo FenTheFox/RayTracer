@@ -217,11 +217,11 @@ struct Voxel
 		return ret;
 	}
 
-	Hit *intersect (Ray r, float tmin, float tmax)
+	std::pair<Hit *, Hit *>intersect (Ray r, float tmin, float tmax)
 	{
 		Plane pminx { Point3f { minx, 0, 0 }, Point3f { 1.0, 0.0, 0.0 } }, pminy { Point3f { 0, miny, 0 }, Point3f { 0.0, 1.0, 0.0 } }, pminz { Point3f { 0, 0, minz }, Point3f { 0.0, 0.0, 1.0 } },
 			pmaxx { Point3f { maxx, 0, 0 }, Point3f { 1.0, 0.0, 0.0 } }, pmaxy { Point3f { 0, maxy, 0 }, Point3f { 0.0, 1.0, 0.0 } }, pmaxz { Point3f { 0, 0, maxz }, Point3f { 0.0, 0.0, 1.0 } };
-		Hit *hits[6], *closest;
+		Hit *hits[6], *closest, *farthest;
 		hits[0] = pminx.intersect (r, tmin, tmax);
 		hits[1] = pminy.intersect (r, tmin, tmax);
 		hits[2] = pminz.intersect (r, tmin, tmax);
@@ -233,7 +233,11 @@ struct Voxel
 		for (size_t i = 1; i < 6; i++)
 			if (closest == NULL || (hits[i] != NULL && hits[i]->t < closest->t))
 				closest = hits[i];
-		return closest;
+		farthest = hits[0];
+		for (size_t i = 1; i < 6; i++)
+			if (farthest == NULL || (hits[i] != NULL && hits[i]->t > farthest->t))
+				farthest = hits[i];
+		return std::make_pair(closest, farthest);
 	}
 };
 #endif
