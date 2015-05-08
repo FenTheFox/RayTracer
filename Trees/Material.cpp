@@ -20,7 +20,7 @@ vector<Material> Material::parseMaterials (const string& f)
 
 Material::Material (ifstream &f)
 {
-	int splitIdx;
+	size_t splitIdx;
 	string line, fieldName, field;
 	/*getline (f, line);
 	if ((line = trim (line)) == "") return;
@@ -46,13 +46,13 @@ Material::Material (ifstream &f)
 		else if (fieldName == "illum")
 			illum = (illum_model)atoi (field.c_str());
 		else if (fieldName == "Ns")
-			Ns = atoi (field.c_str ());
+			Ns = atof (field.c_str ());
 		else if (fieldName == "Ni")
-			Ni = atoi (field.c_str ());
+			Ni = atof (field.c_str ());
 		else if (fieldName == "d")
-			d = atoi (field.c_str ());
+			d = atof (field.c_str ());
 		else if (fieldName == "Tr")
-			Tr = atoi (field.c_str ());
+			Tr = atof (field.c_str ());
 	}
 }
 

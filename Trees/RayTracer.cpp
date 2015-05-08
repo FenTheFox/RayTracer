@@ -3,8 +3,11 @@
 
 #include "stdafx.h"
 #include "Mesh.h"
+#include "KDTree.h"
 #include "RayTracer.h"
+
 void main (Ray *rays, Mat_Struct *mats, Face *faces, int num_faces, cl_float4 *out, int idx);
+
 void printCwd ()
 {
 	char cwd[FILENAME_MAX];
@@ -20,7 +23,7 @@ inline void checkErr (cl_int err, const char* name)
 	}
 }
 
-void CRayTracer::setMatBuffer (std::vector<Material> mats)
+void RayTracer::setMatBuffer (std::vector<Material> mats)
 {
 	numMaterial = mats.size ();
 	materialBuff = new Mat_Struct[numMaterial];
@@ -28,20 +31,22 @@ void CRayTracer::setMatBuffer (std::vector<Material> mats)
 		materialBuff[i] = mats[i];
 }
 
-void CRayTracer::setFaceBuffer (std::vector<Face> faces)
+void RayTracer::setFaceBuffer (std::vector<Face> faces)
 {
 	numFace = faces.size ();
 	faceBuff = new Face[numFace];
 	for (size_t i = 0; i < faces.size (); i++)
 		faceBuff[i] = faces[i];
+
+	kdtree = KDTree (faces);
 }
 
-void CRayTracer::makeRays (Ray * buff)
+void RayTracer::makeRays (Ray * buff)
 {
 	Point3f cpos (0.0, 0.0, 500.0), cdir (0.0, 0.0, -1.0), cup (0.0, 1.0, 0.0), cright (1.0, 0.0, 0.0);
 	double norm_i, norm_j;
 	for (size_t i = 0; i < width; i++) {
-		norm_i = ((float)i / (float)width) - 0.5;
+		norm_i = ((float)i / (float)width);
 		for (size_t j = 0; j < height; j++) {
 			norm_j = ((float)j / (float)height) - 0.5;
 			buff[j*width + i].pos = cpos;
@@ -52,7 +57,7 @@ void CRayTracer::makeRays (Ray * buff)
 	}
 }
 
-void CRayTracer::raytrace (cl_float4 *img_buff)
+void RayTracer::raytrace (cl_float4 *img_buff)
 {
 	cl_int err;
 	int rays = width*height;
@@ -120,7 +125,7 @@ void CRayTracer::raytrace (cl_float4 *img_buff)
 	std::cerr << (end - start).count () << std::endl;
 }
 
-CRayTracer::CRayTracer(int width, int height)
+RayTracer::RayTracer(int width, int height)
 {
 	kernel_file = "hw_kernel.cl";
 	this->width = width;
@@ -129,5 +134,5 @@ CRayTracer::CRayTracer(int width, int height)
 	numFace = 0;
 }
 
-CRayTracer::CRayTracer ()
+RayTracer::RayTracer ()
 {}

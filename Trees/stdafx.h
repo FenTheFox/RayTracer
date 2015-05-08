@@ -19,16 +19,16 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+#include <algorithm>
+#include <array>
+#include <chrono>
+#include <deque>
 #include <iostream>
 #include <fstream>
+#include <list>
+#include <random>
 #include <string>
 #include <vector>
-#include <list>
-#include <array>
-#include <deque>
-#include <chrono>
-
-#include <random>
 
 #define CL_USE_DEPRECATED_OPENCL_2_0_APIS
 #include <CL\cl.hpp>

@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "Trees.h"
 #include "Structs.h"
+#include "KDTree.h"
 #include "RayTracer.h"
 
 #define MAX_LOADSTRING 100
@@ -16,7 +17,7 @@ TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
 GLsizei width, height;
 
-CRayTracer rt;
+RayTracer rt;
 Trees t;
 
 PIXELFORMATDESCRIPTOR pfd = {
@@ -164,9 +165,9 @@ bool DrawGLScene ()
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity ();
 	double h = 10.0, w = h * ((GLfloat)width / (GLfloat)height);
-	rt = CRayTracer (width, height);
-	t.parseTreeFile ("test.obj", rt);
-	t.generateTrees (width, height, 1080, 10, 0);
+	rt = RayTracer (width, height);
+	rt.setMatBuffer(t.parseTreeFile ("test.obj"));
+	t.generateTrees (width, height, 10, 0);
 	rt.setFaceBuffer (t.faces);
 	rt.raytrace (ptr);
 	glBindTexture (GL_TEXTURE_2D, 1);

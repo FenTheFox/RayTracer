@@ -15,7 +15,7 @@ public:
 	{
 		ColorOnAmbientOff, ColorAndAmbientOn, HighlightOn
 	};
-	int id;
+	size_t id;
 	std::string name;
 	Point3f Ka, Kd, Ks, Ke, Tf;
 	double Ns, Ni, d, Tr;

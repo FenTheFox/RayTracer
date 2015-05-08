@@ -16,47 +16,50 @@ bool is_good (vector<vector<Point2f>> grid, Point2f pt, double min_dist, double 
 			if (i < 0 || j < 0) continue;
 			tmp = grid[i][j];
 			dist = sqrt (pow (tmp.x - pt.x, 2) + pow (tmp.y - pt.y, 2));
-			if ((tmp.x && tmp.y) && dist < min_dist)
+			if (tmp.x && tmp.y && dist < min_dist)
 				return FALSE;
 		}
 	}
 	return TRUE;
 }
 
-void Trees::generateTrees (double width, double height, double min_dist, int num, int age)
+void Trees::generateTrees (double width, double height, int num, int age)
 {
 	vector<std::pair<Point2f, Tree>> gen_trees;
-	//double cell_size = min_dist / sqrt (2), gwidth = width / cell_size, gheight = height / cell_size, r, angle;
-	//auto grid = vector<vector<Point2f>> (gwidth, vector<Point2f> (gheight));
-	//auto worklist = deque<Point2f> ();
-	//default_random_engine gen;
-	//uniform_real_distribution<double> r_dist (0, 2), angle_dist (0, 2 * M_PI), dist (0.0, 1.0);
-	//Point2f pt = Point2f { dist (gen)*width, dist (gen)*height }, new_pt;
+	double cell_size = min_dist / sqrt (2), r, angle;
+	size_t gwidth = width / cell_size, gheight = height / cell_size;
+	auto grid = vector<vector<Point2f>> (gwidth, vector<Point2f> (gheight));
+	auto worklist = deque<Point2f> ();
+	default_random_engine gen;
+	uniform_real_distribution<double> r_dist (0, 2 * min_dist), angle_dist (0, 2 * M_PI), dist (0.0, 1.0);
+	Point2f pt = Point2f { dist (gen)*width, dist (gen)*height }, new_pt;
 
-	//worklist.push_back (pt);
-	//trees.push_back (make_pair (pt, tree_objs[dist (gen)*tree_objs.size ()]));
-	//grid[pt.x / cell_size][pt.y / cell_size] = pt;
+	worklist.push_back (pt);
+	gen_trees.push_back (make_pair (pt, tree_objs[dist (gen)*tree_objs.size ()]));
+	grid[pt.x / cell_size][pt.y / cell_size] = pt;
 
-	//while (!worklist.empty ()) {
-	//	pt = worklist[0];
-	//	worklist.pop_front ();
-	//	random_shuffle (worklist.begin (), worklist.end ());
-	//	for (size_t i = 0; i < num; i++) {
-	//		r = r_dist (gen);
-	//		angle = angle_dist (gen);
-	//		new_pt = Point2f { pt.x + r*cos (angle), pt.y + r*sin (angle) };
-	//		if (new_pt.x > 0 && new_pt.x < width &&
-	//			 new_pt.y > 0 && new_pt.y < height &&
-	//			 is_good (grid, new_pt, min_dist, cell_size)) {
-	//			worklist.push_back (new_pt);
-	//			trees.push_back (make_pair (new_pt, tree_objs[dist (gen)*tree_objs.size ()]));
-	//			grid[min (new_pt.x / cell_size, gwidth - 1)][min (new_pt.y / cell_size, gheight - 1)] = new_pt;
-	//		}
-	//	}
-	//}
+	while (!worklist.empty ()) {
+		pt = worklist[0];
+		worklist.pop_front ();
+		random_shuffle (worklist.begin (), worklist.end ());
+		for (size_t i = 0; i < num; i++) {
+			r = r_dist (gen);
+			angle = angle_dist (gen);
+			new_pt = Point2f { pt.x + r*cos (angle), pt.y + r*sin (angle) };
+			if (new_pt.x > 0 && new_pt.x < width &&
+				 new_pt.y > 0 && new_pt.y < height &&
+				 is_good (grid, new_pt, min_dist, cell_size)) {
+				worklist.push_back (new_pt);
+				gen_trees.push_back (make_pair (new_pt, tree_objs[dist (gen)*tree_objs.size ()]));
+				grid[min (new_pt.x / cell_size, gwidth - 1)][min (new_pt.y / cell_size, gheight - 1)] = new_pt;
+			}
+		}
+	}
 
-	gen_trees.push_back (pair<Point2f, Tree> (Point2f (), Tree(tree_objs[0])));
-	min = { -1*width, -1*height, 0.0 };
+	//gen_trees.push_back (pair<Point2f, Tree> (Point2f { -min_dist, 0.0 }, Tree (tree_objs[0])));
+	//gen_trees.push_back (pair<Point2f, Tree> (Point2f { 0.0, min_dist }, Tree (tree_objs[0])));
+	//gen_trees.push_back (pair<Point2f, Tree> (Point2f { min_dist, 0.0 }, Tree (tree_objs[0])));
+	min = { -1 * width, -1 * height, 0.0 };
 	max = { width, height, 0.0 };
 	for each (auto tp in gen_trees)
 	{
@@ -64,12 +67,12 @@ void Trees::generateTrees (double width, double height, double min_dist, int num
 		{
 			vector<Face> mfaces (m._verts.size () / 3);
 			for (size_t i = 0; i < m._verts.size () / 3; i++) {
-				mfaces[i].v0 = Point3f (m._verts[i * 3].x + tp.first.x, m._verts[i * 3].y + tp.first.y, m._verts[i * 3].z);
-				mfaces[i].v1 = Point3f (m._verts[i * 3 + 1].x + tp.first.x, m._verts[i * 3 + 1].y + tp.first.y, m._verts[i * 3 + 1].z);
-				mfaces[i].v2 = Point3f (m._verts[i * 3 + 2].x + tp.first.x, m._verts[i * 3 + 2].y + tp.first.y, m._verts[i * 3 + 2].z);
-				mfaces[i].n0 = Point3f (m._normals[i * 3].x + tp.first.x, m._normals[i * 3].y + tp.first.y, m._normals[i * 3].z);
-				mfaces[i].n1 = Point3f (m._normals[i * 3 + 1].x + tp.first.x, m._normals[i * 3 + 1].y + tp.first.y, m._normals[i * 3 + 1].z);
-				mfaces[i].n2 = Point3f (m._normals[i * 3 + 2].x + tp.first.x, m._normals[i * 3 + 2].y + tp.first.y, m._normals[i * 3 + 2].z);
+				mfaces[i].v0 = Point3f (m._verts[i * 3].x + tp.first.x, m._verts[i * 3].y, m._verts[i * 3].z);
+				mfaces[i].v1 = Point3f (m._verts[i * 3 + 1].x + tp.first.x, m._verts[i * 3 + 1].y, m._verts[i * 3 + 1].z);
+				mfaces[i].v2 = Point3f (m._verts[i * 3 + 2].x + tp.first.x, m._verts[i * 3 + 2].y, m._verts[i * 3 + 2].z);
+				mfaces[i].n0 = Point3f (m._normals[i * 3].x + tp.first.x, m._normals[i * 3].y, m._normals[i * 3].z);
+				mfaces[i].n1 = Point3f (m._normals[i * 3 + 1].x + tp.first.x, m._normals[i * 3 + 1].y, m._normals[i * 3 + 1].z);
+				mfaces[i].n2 = Point3f (m._normals[i * 3 + 2].x + tp.first.x, m._normals[i * 3 + 2].y, m._normals[i * 3 + 2].z);
 				mfaces[i].mat = m.mat.id;
 			}
 			faces.insert (faces.end (), mfaces.begin (), mfaces.end ());
@@ -95,9 +98,12 @@ void Trees::generateTrees (double width, double height, double min_dist, int num
 			f.v2 = f.v2 / scale;
 		}
 	}
+
+	size_t mid = faces.size () / 2;
+	nth_element (faces.begin (), faces.begin () + mid, faces.end (), comp<X>);
 }
 
-void Trees::parseTreeFile (string file, CRayTracer &rt)
+vector<Material> Trees::parseTreeFile (string file)
 {
 	ifstream ifs (file);
 	string line;
@@ -105,13 +111,12 @@ void Trees::parseTreeFile (string file, CRayTracer &rt)
 	vector<Material> mats;
 	vector<Mesh> meshes;
 
-	while (getline(ifs,line)) {
+	while (getline (ifs, line)) {
 		if (line.find ("mtllib") != string::npos) {
-			mats = Material::parseMaterials (substring (line, line.find_first_of (' ') + 1, line.size()));
+			mats = Material::parseMaterials (substring (line, line.find_first_of (' ') + 1, line.size ()));
 			break;
 		}
 	}
-	rt.setMatBuffer (mats);
 
 	while (getline (ifs, line, 'v')) {
 		if (ifs.good ()) {
@@ -121,8 +126,8 @@ void Trees::parseTreeFile (string file, CRayTracer &rt)
 		}
 	}
 
-	for (size_t i = 0; i < meshes.size(); i++)
-		for (size_t j = i + 1; j < meshes.size(); j++)
+	for (size_t i = 0; i < meshes.size (); i++)
+		for (size_t j = i + 1; j < meshes.size (); j++)
 			if (meshes[i].Merge (meshes[j]))
 				meshes.erase (meshes.begin () + j);
 
@@ -138,7 +143,7 @@ void Trees::parseTreeFile (string file, CRayTracer &rt)
 			meshes[i]._normals.push_back (Mesh::normals[p3.second - 1]);
 		}
 	}
-		
+
 	Tree t;
 	for each (Mesh m in meshes)
 	{
@@ -150,11 +155,29 @@ void Trees::parseTreeFile (string file, CRayTracer &rt)
 		t.meshes.push_back (m);
 	}
 	tree_objs[0] = t;
+
+	for each (auto to in tree_objs)
+	{
+		pair<double, double> min, max;
+		for each (Mesh m in t.meshes)
+		{
+			for each (auto v in m._verts)
+			{
+				if (v.x < min.first) min.first = v.x;
+				if (v.x > max.first) max.first = v.x;
+				if (v.z < min.second) min.second = v.z;
+				if (v.z > max.second) max.second = v.z;
+			}
+		}
+		if (max.first - min.first > min_dist) min_dist = max.first - min.first;
+		if (max.second - min.second > min_dist) min_dist = max.second - min.second;
+	}
+	
+	return mats;
 }
 
 Trees::Trees ()
-{
-}
+{}
 
 Trees::~Trees ()
 {}
